@@ -2,7 +2,18 @@
 (function(jQuery){
     // console.log('linkclick');
     var makeLink = function(link){
-        return '123';
+        let promise = new Promise(function(resolve,reject){
+            jQuery.post('/wp-content/plugins/linkclick/ajax.php?func=makeLink',{
+                link: link
+            },function(result){
+                if(!result.error){
+                    resolve(result);
+                }else{
+                    reject();
+                }
+            })
+        });
+        return promise;
     }
     tinymce.PluginManager.add('linkclick_button',function(editor,url){
         // console.log(editor,url);
@@ -17,9 +28,12 @@
             if(node.nodeName != 'A' && node.nodeName != 'a') return;
             // console.log(node.href)
             let ol = node.href;
-            let nl = makeLink(ol);
-            node.href = nl;
-            node.setAttribute('data-mce-href',nl);
+            makeLink(ol).then(function(data){
+                let nl = data.link;
+                node.href = nl;
+                node.setAttribute('data-mce-href',nl);
+
+            })
             // console.log(node.dataset.mceHref)
         }
         editor.addButton('linkclick_button',{

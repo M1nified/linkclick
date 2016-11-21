@@ -16,3 +16,10 @@
 
  add_action('admin_menu','linkclick\add_menu_settings');
 
+function shall_lock() {
+    // tutaj bedzie sprawdzanie czy zalogowany i czy powinien byc
+    print_r("shalllock".is_user_logged_in());
+}
+
+add_action( 'init', 'linkclick\shall_lock' );
+

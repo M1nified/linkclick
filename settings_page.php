@@ -15,6 +15,7 @@ global $db_links;
 
 // ----- Saving -----
 // print_r($_POST);
+if (isset($_POST['Id']))
 foreach ($_POST['Id'] as $key => $id) {
     $wpdb->update(
         $db_links,

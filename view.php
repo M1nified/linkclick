@@ -18,6 +18,7 @@ try{
     $is_user_logged_in = is_user_logged_in();
     if($lc->JustTrack == false && !$is_user_logged_in){// if login required and not logged in
         auth_redirect();
+        exit;
     }
     if($is_user_logged_in){ // user is logged in
         $user = wp_get_current_user();

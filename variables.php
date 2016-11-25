@@ -3,4 +3,8 @@
 
 global $wpdb;
 global $db_links;
-$db_links = $wpdb->prefix.'linkclick_links';
+global $db_log;
+global $db_category;
+$db_links = $wpdb->prefix.'linkclick_link';
+$db_log = $wpdb->prefix.'linkclick_log';
+$db_category = $wpdb->prefix.'linkclick_category';

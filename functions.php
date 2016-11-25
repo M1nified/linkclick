@@ -1,6 +1,6 @@
 <?php namespace linkclick;
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
-include_once '../../../wp-load.php';
+// include_once realpath('../../../wp-load.php');
 include_once 'variables.php';
 
  function make_link_from_ticket($ticket){

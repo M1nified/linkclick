@@ -22,3 +22,34 @@ function add_new_link($target){
 function get_new_ticket($link = null){
     return str_replace('.','_',uniqid($link == null ? md5($link) : '',true)); 
 }
+
+function get_categories_tree(){
+    global $wpdb;
+    global $lc_db_category;
+    global $categories;
+    global $tree;
+    $categories = $wpdb->get_results("SELECT * FROM {$lc_db_category}");
+    $tree = [];
+    function add_subcategories($masterid,$indentation_level){
+        global $categories;
+        global $tree;
+        global $masterid2;
+        $masterid2 = $masterid;
+        $kids = array_filter($categories, function($cat){
+            global $masterid2;
+            return $cat->MasterCategoryID == $masterid2;
+        });
+        foreach ($kids as $key => $cat) {
+            $cat->DisplayName = str_pad("",$indentation_level,"-")." ".$cat->Name;
+            $tree[] = $cat;
+            add_subcategories($cat->CategoryID,$indentation_level+1);
+        }
+    }
+    // foreach ($categories as $key => $category) {
+    //     $categories[$key]->DisplayName = $category->Name;
+    // }
+    add_subcategories(null,0);
+    // print_r($categories);
+    // print_r($tree);
+    return $tree;
+}

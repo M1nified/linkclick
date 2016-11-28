@@ -61,3 +61,57 @@ function add_quick_edit($column_name, $post_type){
     <?php
 }
 */
+
+
+// Add the column
+function media_column( $cols ) {
+    $cols["filename"] = "Secured";
+    return $cols;
+}
+
+// Display filenames
+function media_value( $column_name, $id ) {
+    global $wpdb;
+    $meta = wp_get_attachment_metadata($id);
+    print_r($id);
+    $info = $wpdb->get_row("SELECT *
+        FROM www_wordpress.wp_posts p
+        left join wp_linkclick_link ll on ll.PostId = p.ID
+        WHERE p.ID = {$id}");
+    //print_r($info);
+    ?>
+    <form action="<?php echo $_SERVER['REQUEST_URI']; ?>" method="post" style="display: block;">
+        <?php
+        /*<input type="hidden" name="mode" value="linkclick_update">
+        <input type="hidden" name="post_id" value="<?php echo $id; ?>">
+        <p><input type="checkbox" name="Secure" <?php echo $info->Secure == 1 ? 'checked' : ''; ?>></p>
+        <p><input type="submit"></p>*/
+        if($info->Secure == 1){
+            ?>
+            <p><a href="?post=<?php echo $id; ?>&lc_action=unsecure" class="button">Unsecure</a></p>
+            <?php
+        }else{?>
+            <!--<a href="<?php echo $_SERVER['REQUEST_URI']; ?>">Secure</a>-->
+            <p><a href="?post=<?php echo $id; ?>&lc_action=secure" class="button">Secure</a></p>
+            <?php
+        }?>
+    </form>
+    <?php
+    //Used a few PHP functions cause 'file' stores local url to file not filename
+}
+
+// Register the column as sortable & sort by name
+function media_column_sortable( $cols ) {
+    $cols["filename"] = "name";
+
+    return $cols;
+}
+
+
+// Hook actions to admin_init
+function hook_new_media_columns() {
+    add_filter( 'manage_media_columns', 'linkclick\media_column' );
+    add_action( 'manage_media_custom_column', 'linkclick\media_value', 10, 2 );
+    add_filter( 'manage_upload_sortable_columns', 'linkclick\media_column_sortable' );
+}
+add_action( 'admin_init', 'linkclick\hook_new_media_columns' );

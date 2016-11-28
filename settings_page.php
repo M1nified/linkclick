@@ -47,6 +47,57 @@ if(isset($_POST['mode']) && $_POST['mode'] === 'add_link'){
         print("Added:");
         print_r($insert_array);
     }
+}elseif(isset($_POST['mode']) && $_POST['mode'] === 'update_media'){
+    try{
+        $update_dir = realpath("{$_SERVER['DOCUMENT_ROOT']}/media-upload/");
+        if(!$update_dir){
+            throw new \Exception("[ERROR] media-update directory not present");
+        }
+        $Directory = new \RecursiveDirectoryIterator($update_dir);
+        $Iterator = new \RecursiveIteratorIterator($Directory);
+        // $Regex = new \RegexIterator($Iterator, '/.*/i', \RecursiveRegexIterator::GET_MATCH);
+        // print_r($Iterator);
+        foreach ($Iterator as $key => $value) {
+            $filename = $value->getFilename();
+            if(in_array($filename,['.','..'])){
+                continue;
+            }
+            $filepathname = $value->getPathname();
+            // print_r($filepathname);
+            $filetype = wp_check_filetype( basename( $filepathname ), null );
+            // print_r($filetype);
+            $wp_upload_dir = wp_upload_dir();
+            // print_r($wp_upload_dir);
+            $parent_post_id = 0;
+
+            $uploadedfilename = basename( $filename );
+            $uploadedfilepath = get_new_file_name($wp_upload_dir['path'] . '/' . $uploadedfilename);
+            $uploadedfilename = basename( $uploadedfilepath );
+            if(!copy($filepathname,$uploadedfilepath)){
+                throw new \Exception("[ERROR] Failed to copy file.");
+            }
+            // Prepare an array of post data for the attachment.
+            $attachment = array(
+                'guid'           => $wp_upload_dir['url'] . '/' . $uploadedfilename, 
+                'post_mime_type' => $filetype['type'],
+                'post_title'     => preg_replace( '/\.[^.]+$/', '', $uploadedfilename ),
+                'post_content'   => '',
+                'post_status'    => 'inherit'
+            );
+
+            $attach_id = wp_insert_attachment( $attachment, $filename, $parent_post_id );
+            // Make sure that this file is included, as wp_generate_attachment_metadata() depends on it.
+            // print_r($attach_id);
+            require_once( ABSPATH . 'wp-admin/includes/image.php' );
+            // Generate the metadata for the attachment, and update the database record.
+            $attach_data = wp_generate_attachment_metadata( $attach_id, $filename );
+            wp_update_attachment_metadata( $attach_id, $attach_data );
+            set_post_thumbnail( $parent_post_id, $attach_id );
+            unlink($filepathname);
+        }
+    }catch(\Exception $e){
+        echo $e->getMessage(), "\n";
+    }
 }
 
 
@@ -105,6 +156,11 @@ $categories = get_categories_tree();
 
 ?>
 <h1>LinkClick</h1>
+<h2>Update Media</h2>
+<form action="<?php echo $_SERVER['REQUEST_URI']; ?>" method="post" style="display: block;">
+    <input type="hidden" name="mode" value="update_media">
+    <input type="submit">
+</form>
 <h2>Add</h2>
 <section>
 <h3>Add Link</h3>

@@ -16,7 +16,7 @@ function create_tables(){
         `CategoryID` int(11) DEFAULT NULL,
         `SubCategoryId` int(11) DEFAULT NULL,
         `Name` varchar(256) CHARACTER SET utf8 DEFAULT NULL,
-        `JustTrack` int(11) DEFAULT '0',
+        `Secure` int(11) DEFAULT '0',
         `PostId` bigint(20) DEFAULT NULL,
         PRIMARY KEY (`Id`),
         UNIQUE KEY `Id_UNIQUE` (`Id`),

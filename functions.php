@@ -53,3 +53,20 @@ function get_categories_tree(){
     // print_r($tree);
     return $tree;
 }
+
+function get_new_file_name($filepathname){
+    $finfo = pathinfo($filepathname);
+    $noext = $finfo['dirname'].DIRECTORY_SEPARATOR.$finfo['filename'];
+    $files = glob("{$noext}.*");
+    if(sizeof($files) == 0){
+        return $filepathname;
+    }
+    $files = glob("{$noext}-*");
+    $last = end($files);
+    if(preg_match('/-(\d)\.[^.\s]+/m',$last,$matches)){
+        print_r($matches);
+        $index = intval($matches[1]) + 1;
+        return "{$noext}-{$index}.{$finfo['extension']}";
+    }
+    return "{$noext}-1.{$finfo['extension']}";
+}

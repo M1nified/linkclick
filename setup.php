@@ -20,22 +20,13 @@
 add_action( 'init', 'linkclick\shall_lock' );
 function shall_lock() {
     if (preg_match('/\/wp-content\/uploads\//m',$_SERVER['REQUEST_URI']) === 1) {
-        $realpathname = realpath("{$_SERVER['DOCUMENT_ROOT']}{$_SERVER['REQUEST_URI']}");
-        if(!$realpathname){
-            header('HTTP/1.0 404 Not Found');
-            exit();
-        }
-        // print($realpathname);
-        // $finfo = new \finfo(FILEINFO_MIME);
-        // $mime = $finfo->file($realpathname);
-        $filetype = wp_check_filetype($realpathname);
-        // print_r($filetype);
-        // $a = is_access_url($_SERVER['REQUEST_URI']);
-        // echo "<";
-        // print_r($a);
-        // echo ">";
         if(is_access_url($_SERVER['REQUEST_URI']) === true){
-            // echo 'OK';
+            $realpathname = realpath("{$_SERVER['DOCUMENT_ROOT']}{$_SERVER['REQUEST_URI']}");
+            if(!$realpathname){
+                header('HTTP/1.0 404 Not Found');
+                exit();
+            }
+            $filetype = wp_check_filetype($realpathname);
             log_download_of_path($_SERVER['REQUEST_URI']);
             header('Content-Type: '.$filetype['type']);
             header("Content-Transfer-Encoding: Binary"); 
@@ -43,18 +34,31 @@ function shall_lock() {
             ob_clean();
             flush(); 
             readfile($realpathname);
+            exit(); 
         }else{
             auth_redirect();
-        }
-        exit();
+            exit();
+        }   
     }
 }
 
-add_filter('manage_post_posts_columns', 'linkclick\add_quick_edit_column');
-function add_quick_edit_column($columns) {
-    $columns['widget_set'] = 'LinkClick';
-    return $columns;
-}
+function action_loop_start( $wp_query ) {
+    // print_r($wp_query->posts);
+    $posts = $wp_query->posts;
+    foreach ($posts as $key => $post) {
+        if(is_access($post->ID) === false){
+            $login_url = wp_login_url( $_SERVER['REQUEST_URI'] );
+            $post->post_content = "<a href=\"{$login_url}\">{$login_url}</a>";
+        }
+    }
+} 
+add_action( 'loop_start', 'linkclick\action_loop_start', 10, 1 ); 
+
+// add_filter('manage_post_posts_columns', 'linkclick\add_quick_edit_column');
+// function add_quick_edit_column($columns) {
+//     $columns['widget_set'] = 'LinkClick';
+//     return $columns;
+// }
 
 /*add_action('manage_posts_custom_column', 'linkclick\add_column_content', 10, 2);
 add_action('manage_pages_custom_column', 'linkclick\add_column_content', 10, 2);
@@ -99,7 +103,7 @@ function media_column( $cols ) {
 function media_value( $column_name, $id ) {
     global $wpdb;
     global $lc_db_link;
-    $meta = wp_get_attachment_metadata($id);
+    // $meta = wp_get_attachment_metadata($id);
     // print_r($id);
     $info = $wpdb->get_row("SELECT *
         FROM {$wpdb->posts} p
@@ -134,13 +138,19 @@ function hook_new_media_columns() {
     add_filter( 'manage_media_columns', 'linkclick\media_column' );
     add_action( 'manage_media_custom_column', 'linkclick\media_value', 10, 2 );
     add_filter( 'manage_upload_sortable_columns', 'linkclick\media_column_sortable' );
+
+    add_filter( 'manage_posts_columns', 'linkclick\media_column' );
+    add_action( 'manage_posts_custom_column', 'linkclick\media_value', 10, 2 );
+
+    add_filter( 'manage_pages_columns', 'linkclick\media_column' );
+    add_action( 'manage_pages_custom_column', 'linkclick\media_value', 10, 2 );
     save_media_page();
 }
 add_action( 'admin_init', 'linkclick\hook_new_media_columns' );
 
 function save_media_page(){
     echo basename($_SERVER["SCRIPT_FILENAME"]);
-    if(basename($_SERVER["SCRIPT_FILENAME"]) != 'upload.php'){
+    if(basename($_SERVER["SCRIPT_FILENAME"]) != 'upload.php' && basename($_SERVER["SCRIPT_FILENAME"]) != 'edit.php'){
         return;
     }
     global $wpdb;

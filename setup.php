@@ -100,7 +100,7 @@ function media_value( $column_name, $id ) {
     global $wpdb;
     global $lc_db_link;
     $meta = wp_get_attachment_metadata($id);
-    print_r($id);
+    // print_r($id);
     $info = $wpdb->get_row("SELECT *
         FROM {$wpdb->posts} p
         left join {$lc_db_link} ll on ll.PostId = p.ID

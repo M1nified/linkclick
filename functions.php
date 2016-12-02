@@ -91,6 +91,7 @@ function unsecure_file($filepath){
 }
 
 function is_access_url($url){
+    // echo $url;
     global $wpdb;
     $post = $wpdb->get_row("SELECT * FROM {$wpdb->posts}
     WHERE guid LIKE '%{$url}%'");
@@ -102,12 +103,47 @@ function is_access_url($url){
 function is_access($post_id){
     global $wpdb;
     global $lc_db_link;
-    $record = $wpdb->get_row("SELECT * FROM {$wpdb->posts} p
+    $record = $wpdb->get_row("SELECT lcl.Secure FROM {$wpdb->posts} p
     LEFT JOIN {$lc_db_link} lcl ON p.ID = lcl.PostId
     WHERE p.ID = {$post_id}");
-    if($record == NULL || $record->Secure != 1){
+    // echo 1;
+    // print_r($record);
+    if($record === NULL || $record->Secure != true){
+        // echo 2;
         return true;
     }else{
-        return false;
+        // echo 3;
+        return is_user_logged_in() == 1 ? true : false;
     }
+}
+
+function log_download_of_path($filepathname){
+    // echo 'log_download_of_path';
+    global $wpdb;
+    global $lc_db_link;
+    global $lc_db_log;
+    $record = $wpdb->get_row("SELECT * FROM {$wpdb->posts} p
+    LEFT JOIN {$lc_db_link} lcl ON p.ID = lcl.PostId
+    WHERE p.guid LIKE '%{$filepathname}'");
+    // print_r($record);
+    $LinkId = $record->Id;
+    log_download_of($LinkId);
+}
+function log_download_of($LinkId){
+    // echo 'log_download_of';
+    // print_r($LinkId);
+    if($LinkId == NULL){
+        return;
+    }
+    global $wpdb;
+    global $lc_db_log;
+    $current_user = wp_get_current_user();
+    $cuid = $current_user->ID;
+    $wpdb->insert(
+        $lc_db_log,
+        [
+            'LinkId' => $LinkId,
+            'UserId' => $cuid
+        ]
+    );
 }

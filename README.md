@@ -1,3 +1,3 @@
 ``` htaccess
-RewriteRule ^wp-content/.*?$ /index.php [L]
+RewriteRule ^wp-content/uploads/.*?$ /index.php [L]
 ```

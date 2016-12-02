@@ -30,7 +30,13 @@ function shall_lock() {
         // $mime = $finfo->file($realpathname);
         $filetype = wp_check_filetype($realpathname);
         // print_r($filetype);
-        if(is_access_url($realpathname) == true){
+        // $a = is_access_url($_SERVER['REQUEST_URI']);
+        // echo "<";
+        // print_r($a);
+        // echo ">";
+        if(is_access_url($_SERVER['REQUEST_URI']) === true){
+            // echo 'OK';
+            log_download_of_path($_SERVER['REQUEST_URI']);
             header('Content-Type: '.$filetype['type']);
             header("Content-Transfer-Encoding: Binary"); 
             header("Content-disposition: filename=\"" . basename($realpathname) . "\"");

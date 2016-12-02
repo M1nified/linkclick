@@ -70,3 +70,44 @@ function get_new_file_name($filepathname){
     }
     return "{$noext}-1.{$finfo['extension']}";
 }
+
+function secure_media($post_id){
+    // global $wpdb;
+    // $wpdb->get_row()
+    $file = get_attached_file($post_id);
+    print_r($file);
+    return secure_file($file);
+}
+function secure_file($filepath){
+    return true;
+}
+function unsecure_media($post_id){
+    $file = get_attached_file($post_id);
+    print_r($file);
+    return unsecure_file($file);
+}
+function unsecure_file($filepath){
+    return true;
+}
+
+function is_access_url($url){
+    global $wpdb;
+    $post = $wpdb->get_row("SELECT * FROM {$wpdb->posts}
+    WHERE guid LIKE '%{$url}%'");
+    if($post === NULL){
+        return true;
+    }
+    return is_access($post->ID);
+}
+function is_access($post_id){
+    global $wpdb;
+    global $lc_db_link;
+    $record = $wpdb->get_row("SELECT * FROM {$wpdb->posts} p
+    LEFT JOIN {$lc_db_link} lcl ON p.ID = lcl.PostId
+    WHERE p.ID = {$post_id}");
+    if($record == NULL || $record->Secure != 1){
+        return true;
+    }else{
+        return false;
+    }
+}

@@ -1,5 +1,6 @@
 <?php namespace linkclick; 
  defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
+ include_once 'functions.php';
 
  function add_menu_settings(){
     add_submenu_page(
@@ -18,10 +19,29 @@
 
 add_action( 'init', 'linkclick\shall_lock' );
 function shall_lock() {
-    // tutaj bedzie sprawdzanie czy zalogowany i czy powinien byc
-    print_r("shalllock".is_user_logged_in());
-    $is_user_logged_in = is_user_logged_in(); 
-    return $is_user_logged_in;
+    if (preg_match('/\/wp-content\/uploads\//m',$_SERVER['REQUEST_URI']) === 1) {
+        $realpathname = realpath("{$_SERVER['DOCUMENT_ROOT']}{$_SERVER['REQUEST_URI']}");
+        if(!$realpathname){
+            header('HTTP/1.0 404 Not Found');
+            exit();
+        }
+        // print($realpathname);
+        // $finfo = new \finfo(FILEINFO_MIME);
+        // $mime = $finfo->file($realpathname);
+        $filetype = wp_check_filetype($realpathname);
+        // print_r($filetype);
+        if(is_access_url($realpathname) == true){
+            header('Content-Type: '.$filetype['type']);
+            header("Content-Transfer-Encoding: Binary"); 
+            header("Content-disposition: filename=\"" . basename($realpathname) . "\"");
+            ob_clean();
+            flush(); 
+            readfile($realpathname);
+        }else{
+            auth_redirect();
+        }
+        exit();
+    }
 }
 
 add_filter('manage_post_posts_columns', 'linkclick\add_quick_edit_column');
@@ -72,31 +92,26 @@ function media_column( $cols ) {
 // Display filenames
 function media_value( $column_name, $id ) {
     global $wpdb;
+    global $lc_db_link;
     $meta = wp_get_attachment_metadata($id);
     print_r($id);
     $info = $wpdb->get_row("SELECT *
-        FROM www_wordpress.wp_posts p
-        left join wp_linkclick_link ll on ll.PostId = p.ID
+        FROM {$wpdb->posts} p
+        left join {$lc_db_link} ll on ll.PostId = p.ID
         WHERE p.ID = {$id}");
     //print_r($info);
-    ?>
-    <form action="<?php echo $_SERVER['REQUEST_URI']; ?>" method="post" style="display: block;">
+    /*<input type="hidden" name="mode" value="linkclick_update">
+    <input type="hidden" name="post_id" value="<?php echo $id; ?>">
+    <p><input type="checkbox" name="Secure" <?php echo $info->Secure == 1 ? 'checked' : ''; ?>></p>
+    <p><input type="submit"></p>*/
+    if($info->Secure == 1){
+        ?>
+        <p><a href="?post=<?php echo $id; ?>&lc_action=unsecure" class="button">Unsecure</a></p>
         <?php
-        /*<input type="hidden" name="mode" value="linkclick_update">
-        <input type="hidden" name="post_id" value="<?php echo $id; ?>">
-        <p><input type="checkbox" name="Secure" <?php echo $info->Secure == 1 ? 'checked' : ''; ?>></p>
-        <p><input type="submit"></p>*/
-        if($info->Secure == 1){
-            ?>
-            <p><a href="?post=<?php echo $id; ?>&lc_action=unsecure" class="button">Unsecure</a></p>
-            <?php
-        }else{?>
-            <!--<a href="<?php echo $_SERVER['REQUEST_URI']; ?>">Secure</a>-->
-            <p><a href="?post=<?php echo $id; ?>&lc_action=secure" class="button">Secure</a></p>
-            <?php
-        }?>
-    </form>
-    <?php
+    }else{?>
+        <p><a href="?post=<?php echo $id; ?>&lc_action=secure" class="button">Secure</a></p>
+        <?php
+    }
     //Used a few PHP functions cause 'file' stores local url to file not filename
 }
 
@@ -113,5 +128,49 @@ function hook_new_media_columns() {
     add_filter( 'manage_media_columns', 'linkclick\media_column' );
     add_action( 'manage_media_custom_column', 'linkclick\media_value', 10, 2 );
     add_filter( 'manage_upload_sortable_columns', 'linkclick\media_column_sortable' );
+    save_media_page();
 }
 add_action( 'admin_init', 'linkclick\hook_new_media_columns' );
+
+function save_media_page(){
+    echo basename($_SERVER["SCRIPT_FILENAME"]);
+    if(basename($_SERVER["SCRIPT_FILENAME"]) != 'upload.php'){
+        return;
+    }
+    global $wpdb;
+    global $lc_db_link; 
+    if(isset($_GET['post']) && isset($_GET['lc_action'])){
+        if($_GET['lc_action'] === 'secure' || $_GET['lc_action'] === 'unsecure' ) {
+            if($_GET['lc_action'] === 'secure'){
+                secure_media($_GET['post']);
+            }
+            if($_GET['lc_action'] === 'unsecure'){
+                unsecure_media($_GET['post']);
+            }
+            $update_result = $wpdb->update(
+                $lc_db_link,
+                [
+                    'Secure' => $_GET['lc_action'] == 'secure' ? 1 : 0
+                ],
+                [
+                    'PostId' => $_GET['post'],
+                ]
+            );
+            if($update_result === 0){
+                $update_result = $wpdb->insert(
+                    $lc_db_link,
+                    [
+                        'PostId' => $_GET['post'],
+                        'Secure' => $_GET['lc_action'] == 'secure' ? 1 : 0
+                    ]
+                );  
+            }
+            echo $wpdb->insert_id;
+        }
+    }
+}
+
+add_action('template_redirect','linkclick\template_redirect');
+function template_redirect() {
+    
+}

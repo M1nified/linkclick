@@ -25,7 +25,7 @@ if(isset($_POST['mode']) && $_POST['mode'] === 'add_link'){
         'Target' => isset($_POST['Url']) && $_POST['Url'] ? $_POST['Url'] : null,
         'CategoryID' => isset($_POST['CategoryID']) && $_POST['CategoryID'] ? strval($_POST['CategoryID']) : null,
         'Name' => isset($_POST['Name']) && $_POST['Name'] ? $_POST['Name'] : null,
-        'JustTrack' => isset($_POST['JustTrack']) ? $_POST['JustTrack'] : null,
+        'Secure' => isset($_POST['Secure']) ? $_POST['Secure'] : null,
         'PostId' => isset($_POST['PostId']) && $_POST['PostId'] ? $_POST['PostId'] : null
     );
     if(!$wpdb->insert(
@@ -108,7 +108,7 @@ foreach ($_POST['Id'] as $key => $id) {
     $wpdb->update(
         $db_links,
         [
-            'JustTrack' => (isset($_POST['JustTrack'][$key]) && $_POST['JustTrack'][$key] == true) ? 1 : 0
+            'Secure' => (isset($_POST['Secure'][$key]) && $_POST['Secure'][$key] == true) ? 1 : 0
         ],
         [
             'Id' => $id
@@ -195,7 +195,7 @@ $categories = get_categories_tree();
     </select>
     </p>
     <p>
-    <label> JustTrack: <input type="checkbox" name="JustTrack"></label>
+    <label> Secure: <input type="checkbox" name="Secure"></label>
     </p>
     <p><input type="submit" class="button"></p>
     <script>
@@ -263,7 +263,7 @@ $categories = get_categories_tree();
 <th>Name</th>
 <th>Category</th>
 <!--<th>SubCategory</th>-->
-<th>JustTrack</th>
+<th>Secure</th>
 </tr>
 </thead>
 <tbody>
@@ -282,7 +282,7 @@ foreach ($rows as $key => $row) {
     echo "<td>{$row->Name}</td>";
     echo "<td>{$row->CategoryName}</td>";
     // echo "<td></td>";
-    echo "<td style=\"text-align:center\"><input type=\"checkbox\" name=\"JustTrack[{$key}]\" ".($row->JustTrack == 1 ? 'checked' : '').">
+    echo "<td style=\"text-align:center\"><input type=\"checkbox\" name=\"Secure[{$key}]\" ".($row->Secure == 1 ? 'checked' : '').">
     <input type=\"hidden\" name=\"Id[{$key}]\" value=\"{$row->Id}\">
     </td>";
     echo "</tr>";

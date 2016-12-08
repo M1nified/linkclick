@@ -95,12 +95,15 @@ function add_quick_edit($column_name, $post_type){
 
 // Add the column
 function media_column( $cols ) {
-    $cols["filename"] = "Secured";
+    $cols["lc_security"] = "Secured";
     return $cols;
 }
 
 // Display filenames
 function media_value( $column_name, $id ) {
+    if($column_name != 'lc_security'){
+        return;
+    }
     global $wpdb;
     global $lc_db_link;
     // $meta = wp_get_attachment_metadata($id);

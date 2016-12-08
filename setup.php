@@ -149,7 +149,7 @@ function hook_new_media_columns() {
 add_action( 'admin_init', 'linkclick\hook_new_media_columns' );
 
 function save_media_page(){
-    echo basename($_SERVER["SCRIPT_FILENAME"]);
+    // echo basename($_SERVER["SCRIPT_FILENAME"]);
     if(basename($_SERVER["SCRIPT_FILENAME"]) != 'upload.php' && basename($_SERVER["SCRIPT_FILENAME"]) != 'edit.php'){
         return;
     }

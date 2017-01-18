@@ -45,14 +45,45 @@ function shall_lock() {
 function action_loop_start( $wp_query ) {
     // print_r($wp_query->posts);
     $posts = $wp_query->posts;
-    foreach ($posts as $key => $post) {
-        if(is_access($post->ID) === false){
-            $login_url = wp_login_url( $_SERVER['REQUEST_URI'] );
-            $post->post_content = "<a href=\"{$login_url}\">{$login_url}</a>";
+    if(is_singular( )){
+        foreach ($posts as $key => $post) {
+            $is_access = is_access($post->ID);
+            if($is_access === true){
+                continue;
+            }
+            switch ($is_access) {
+                case 3:
+                    $login_url = wp_login_url( get_permalink() );
+                    $post->post_content = "<p class=\"text-center\">"._x("Treść dostępna po zalogowaniu", 'default')."</p><p class=\"text-right\"><a class=\"btn btn-primary\" href=\"{$login_url}\">"._x("Logowanie",'default')."</a></p>";
+                    break;
+                
+                case 2:
+                    if(is_user_logged_in() != 1){
+                        $login_url = wp_login_url( get_permalink() );
+                        $post->post_content = "<p class=\"text-center\">"._x("Treść dostępna po zalogowaniu", 'default')."</p><p class=\"text-right\"><a class=\"btn btn-primary\" href=\"{$login_url}\">"._x("Logowanie",'default')."</a></p>";
+                    }elseif(get_metadata( 'user', get_current_user_id(), 'ss_has_serial', true ) != true){
+                        global $code_validation_url;
+                        $post->post_content = "<p>Treść dostępna po podaniu klucza licencji</p><form method=\"post\" action=\"{$code_validation_url}\"><input type=\"hidden\" name=\"redirect_to\" value=\"".get_permalink()."\"><input type=\"hidden\" name=\"code_type\" value=\"ss_has_serial\"><p><label>Numer seryjny: <input name=\"code\" type=\"text\" placeholder=\"\" required></label></p><p><input class=\"button button-primary\" type=\"submit\"></p></form>";
+                    }
+                
+                default:
+                    # code...
+                    break;
+            }
+
+        }
+    }else{
+        foreach ($posts as $key => $post) {
+            $is_access = is_access($post->ID);
+            if($is_access !== true){
+                $login_url = wp_login_url( $_SERVER['REQUEST_URI'] );
+                $post->post_content = $post->post_excerpt;//."<p><a href=\"{$login_url}\" class=\"btn btn-primary\" role=\"button\">"._x( 'Log in', 'default' )."</a></p>";
+                // $post->post_excerpt = "hidden";
+            }
         }
     }
 } 
-add_action( 'loop_start', 'linkclick\action_loop_start', 10, 1 ); 
+add_action( 'loop_start', __NAMESPACE__.'\action_loop_start', 10, 1 ); 
 
 // add_filter('manage_post_posts_columns', 'linkclick\add_quick_edit_column');
 // function add_quick_edit_column($columns) {
@@ -117,14 +148,17 @@ function media_value( $column_name, $id ) {
     <input type="hidden" name="post_id" value="<?php echo $id; ?>">
     <p><input type="checkbox" name="Secure" <?php echo $info->Secure == 1 ? 'checked' : ''; ?>></p>
     <p><input type="submit"></p>*/
-    if($info->Secure == 1){
+    /*if($info->Secure == 1){
         ?>
         <p><a href="?post=<?php echo $id; ?>&lc_action=unsecure" class="button">Unsecure</a></p>
         <?php
     }else{?>
         <p><a href="?post=<?php echo $id; ?>&lc_action=secure" class="button">Secure</a></p>
         <?php
-    }
+    }*/
+    ?>
+    <p><button class="button button-primary linkclick-btn-secure" type="button" data-post-id="<?php echo $id; ?>">Security</button></p>
+    <?php
     //Used a few PHP functions cause 'file' stores local url to file not filename
 }
 
@@ -147,49 +181,40 @@ function hook_new_media_columns() {
 
     add_filter( 'manage_pages_columns', 'linkclick\media_column' );
     add_action( 'manage_pages_custom_column', 'linkclick\media_value', 10, 2 );
-    save_media_page();
+    save_meta();
 }
 add_action( 'admin_init', 'linkclick\hook_new_media_columns' );
-
-function save_media_page(){
-    // echo basename($_SERVER["SCRIPT_FILENAME"]);
-    if(basename($_SERVER["SCRIPT_FILENAME"]) != 'upload.php' && basename($_SERVER["SCRIPT_FILENAME"]) != 'edit.php'){
-        return;
-    }
-    global $wpdb;
-    global $lc_db_link; 
-    if(isset($_GET['post']) && isset($_GET['lc_action'])){
-        if($_GET['lc_action'] === 'secure' || $_GET['lc_action'] === 'unsecure' ) {
-            if($_GET['lc_action'] === 'secure'){
-                secure_media($_GET['post']);
-            }
-            if($_GET['lc_action'] === 'unsecure'){
-                unsecure_media($_GET['post']);
-            }
-            $update_result = $wpdb->update(
-                $lc_db_link,
-                [
-                    'Secure' => $_GET['lc_action'] == 'secure' ? 1 : 0
-                ],
-                [
-                    'PostId' => $_GET['post'],
-                ]
-            );
-            if($update_result === 0){
-                $update_result = $wpdb->insert(
-                    $lc_db_link,
-                    [
-                        'PostId' => $_GET['post'],
-                        'Secure' => $_GET['lc_action'] == 'secure' ? 1 : 0
-                    ]
-                );  
-            }
-            echo $wpdb->insert_id;
-        }
-    }
-}
 
 add_action('template_redirect','linkclick\template_redirect');
 function template_redirect() {
     
 }
+
+
+function add_admin_scripts( $hook ) {
+    if(in_array($hook,[
+        'edit.php',
+        'upload.php'
+    ])){
+        wp_enqueue_script('linkclick_secure',plugins_url(basename(plugin_dir_path(__FILE__)).'/js/secure.js'),['jquery','jquery-ui-dialog']);
+        wp_enqueue_style( 'style-jquery-ui-dialog', 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css');
+    }
+}
+
+function add_dialog_1(){
+    add_action( 'in_admin_footer', __NAMESPACE__.'\print_dialog_1');
+} 
+add_action( 'admin_enqueue_scripts', __NAMESPACE__.'\add_admin_scripts', 10, 1 );
+add_action( 'edit.php', __NAMESPACE__.'\add_dialog_1');
+add_action( 'load-edit.php', __NAMESPACE__.'\add_dialog_1');
+add_action( 'upload.php', __NAMESPACE__.'\add_dialog_1');
+add_action( 'load-upload.php', __NAMESPACE__.'\add_dialog_1');
+// add_action( 'post.php', __NAMESPACE__.'\add_dialog_1');
+// add_action( 'load-post.php', __NAMESPACE__.'\add_dialog_1');
+
+function setup_boxes(){
+    add_action('add_meta_boxes',__NAMESPACE__.'\add_meta_boxes');
+}
+add_action('load-post.php',__NAMESPACE__.'\setup_boxes');
+add_action('load-post-new.php',__NAMESPACE__.'\setup_boxes');
+

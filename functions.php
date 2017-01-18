@@ -101,6 +101,37 @@ function is_access_url($url){
     return is_access($post->ID);
 }
 function is_access($post_id){
+    global $meta_lock_id;
+    $lock_id = get_metadata( 'post', $post_id, $meta_lock_id, true);
+    if(!isset($lock_id) || $lock_id == "" || $lock_id === false){
+        // not set
+        return true;
+    }
+    // echo $lock_id;
+    // Securities
+    switch ($lock_id) {
+        case 1:
+            return true;
+            break;
+        case 2:
+            $user_id = get_current_user_id();
+            if($user_id == 0){
+                return 2;
+            }
+            $user_has_license = get_metadata( 'user', $user_id, 'ss_has_serial', true );
+            if($user_has_license == true){
+                return true;
+            }
+            return 2;
+            break;
+        case 3:
+            return is_user_logged_in() == 1 ? true : 3;
+            break;
+        default:
+
+            break;
+    }
+    // OLD --
     global $wpdb;
     global $lc_db_link;
     $record = $wpdb->get_row("SELECT lcl.Secure FROM {$wpdb->posts} p
@@ -146,4 +177,86 @@ function log_download_of($LinkId){
             'UserId' => $cuid
         ]
     );
+}
+function print_dialog_1($print_form = true, $post_id = null){
+    global $wpdb;
+    global $lc_db_category;
+    global $lc_db_settings;
+    global $meta_lock_id;
+    global $meta_category_id;
+    $categories = get_categories_tree();
+    $locks = $wpdb->get_results("SELECT
+        s1.option_value as lock_id, s2.option_value as lock_name
+        FROM {$lc_db_settings} s1
+        LEFT JOIN {$lc_db_settings} s2 ON s1.option_reference = s2.option_reference AND s2.option_name like 'lock_name'
+        WHERE s1.option_name like 'lock_id'
+    ");
+    if(isset($post_id) && $post_id != null){
+        $meta_data = get_post_meta( $post_id);
+    }
+    ?>
+    <div class="" id="linkclick-dialog-1">
+    <?php echo $print_form === true ? "<form method=\"post\">" : ""; ?>
+        <input type="hidden" name="linkclick-action" value="save">
+        <input type="hidden" name="linkclick-post-id" value="<?php echo $post_id != null ? $post_id : ""; ?>" id="linkclick-dialog-1-post-id">
+        <p>Category: <select name="linkclick-category-id">
+            <option value=""></option>
+            <?php
+            if(isset($meta_data) && isset($meta_data[$meta_category_id][0])){
+                foreach ($categories as $category) {
+                    if($meta_data[$meta_category_id][0] == $category->CategoryID){
+                        echo "<option value=\"{$category->CategoryID}\" data-parent-id=\"{$category->MasterCategoryID}\" selected>{$category->DisplayName}</option>";
+                    }else{
+                        echo "<option value=\"{$category->CategoryID}\" data-parent-id=\"{$category->MasterCategoryID}\">{$category->DisplayName}</option>";
+                    }
+                }
+            }else{
+                foreach ($categories as $category) {
+                    echo "<option value=\"{$category->CategoryID}\" data-parent-id=\"{$category->MasterCategoryID}\">{$category->DisplayName}</option>";
+                }
+            }
+            ?>
+        </select></p>
+        <p>Lock type: <select name="linkclick-lock-id">
+            <option value=""></option>
+            <?php
+            if(isset($meta_data) && isset($meta_data[$meta_lock_id][0])){
+                foreach ($locks as $lock) {
+                    if($meta_data[$meta_lock_id][0] == $lock->lock_id){
+                        echo "<option value=\"{$lock->lock_id}\" selected>{$lock->lock_name}</option>";
+                    }else{
+                        echo "<option value=\"{$lock->lock_id}\">{$lock->lock_name}</option>";
+                    }
+                }
+            }else{
+                foreach ($locks as $lock) {
+                    echo "<option value=\"{$lock->lock_id}\">{$lock->lock_name}</option>";
+                }
+            }
+            ?>
+
+        </select></p>
+        <?php echo $print_form === true ? "<p style=\"text-align: right;\"><input type=\"submit\" class=\"button button-primary\"></p>" : ""; ?>
+    <?php echo $print_form === true ? "</form>" : ""; ?>
+    </div>
+<?php
+}
+function save_meta(){
+    // echo basename($_SERVER["SCRIPT_FILENAME"]);
+    if(basename($_SERVER["SCRIPT_FILENAME"]) != 'upload.php' && basename($_SERVER["SCRIPT_FILENAME"]) != 'edit.php' && basename($_SERVER["SCRIPT_FILENAME"]) != 'post.php'){
+        return;
+    }
+    global $wpdb;
+    global $lc_db_link; 
+    if(isset($_POST['linkclick-post-id']) && isset($_POST['linkclick-action'])){
+        $post_id = $_POST['linkclick-post-id'];
+        $lock_id = $_POST['linkclick-lock-id'];
+        $category_id = $_POST['linkclick-category-id'];
+        if($_POST['linkclick-action'] === 'save' ) {
+            global $meta_lock_id;
+            global $meta_category_id;
+            update_post_meta( $post_id, $meta_lock_id, $lock_id );
+            update_post_meta( $post_id, $meta_category_id, $category_id );
+        }
+    }
 }

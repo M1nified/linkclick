@@ -17,6 +17,11 @@ global $lc_db_link;
 global $lc_db_log;
 global $lc_db_category;
 
+echo "<h1 style=\"color:red;\">TA STRONA NIE DZIALA</h1>";
+
+// v 1.0.1
+// --------------------------------------------------
+
 // ----- Add --------
 if(isset($_POST['mode']) && $_POST['mode'] === 'add_link'){
     print_r($_POST);

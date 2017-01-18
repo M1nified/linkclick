@@ -2,7 +2,7 @@
 /**
  * Plugin Name: LinkClick
  * Description: 
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: M1nified
  */
  defined( 'ABSPATH' ) or die( 'No script kiddies please!' );

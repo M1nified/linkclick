@@ -9,6 +9,7 @@ function create_tables(){
     global $lc_db_link;
     global $lc_db_log;
     global $lc_db_category;
+    global $lc_db_settings;
     $tabquery = "
     
         CREATE TABLE {$lc_db_link} (
@@ -44,10 +45,20 @@ function create_tables(){
         CONSTRAINT `link` FOREIGN KEY (`LinkID`) REFERENCES `{$lc_db_link}` (`Id`) ON DELETE NO ACTION ON UPDATE NO ACTION
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
+        CREATE TABLE `{$lc_db_settings}` (
+        `id` int(11) NOT NULL AUTO_INCREMENT,
+        `option_name` varchar(250) COLLATE utf8_bin DEFAULT NULL,
+        `option_value` varchar(250) CHARACTER SET utf8 DEFAULT NULL,
+        `option_reference` int(11) NOT NULL,
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `id_UNIQUE` (`id`)
+        ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+
     ";
     $wpdb->query($tabquery);
 }
 function install(){
     create_tables();
 }
-register_activation_hook(__DIR__.'/linkclick.php','linkclick\install');
+register_activation_hook(__DIR__.'/linkclick.php',__NAMESPACE__.'\install');

@@ -20,10 +20,16 @@
 add_action( 'init', 'linkclick\shall_lock' );
 function shall_lock() {
     if (preg_match('/\/wp-content\/uploads\//m',$_SERVER['REQUEST_URI']) === 1) {
-        if(is_access_url($_SERVER['REQUEST_URI']) === true){
+        $is_access = is_access_url($_SERVER['REQUEST_URI']);
+        if($is_access === true){
             $realpathname = realpath("{$_SERVER['DOCUMENT_ROOT']}{$_SERVER['REQUEST_URI']}");
             if(!$realpathname){
-                header('HTTP/1.0 404 Not Found');
+                // echo "404";
+                // header('HTTP/1.0 404 Not Found');
+                global $wp_query;
+                $wp_query->set_404();
+                status_header( 404 );
+                // get_template_part( 404 );
                 exit();
             }
             $filetype = wp_check_filetype($realpathname);

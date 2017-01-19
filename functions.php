@@ -90,15 +90,22 @@ function unsecure_file($filepath){
     return true;
 }
 
-function is_access_url($url){
+function get_post_id_for_url($url){
     // echo $url;
     global $wpdb;
-    $post = $wpdb->get_row("SELECT * FROM {$wpdb->posts}
-    WHERE guid LIKE '%{$url}%'");
+    $post = $wpdb->get_row("SELECT 
+            ID FROM {$wpdb->posts}
+            WHERE guid 
+            LIKE '%{$url}%'");
     if($post === NULL){
-        return true;
+        return false;
+    }else{
+        return $post->ID;
     }
-    return is_access($post->ID);
+}
+function is_access_url($url){
+    $post_id = get_post_id_for_url($url);
+    return $post_id == false ? true : is_access($post_id);
 }
 function is_access($post_id){
     global $meta_lock_id;

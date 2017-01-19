@@ -284,8 +284,7 @@ function register_uploaded_file($spl_file_info){
                 `meta_key` LIKE '_wp_attachment_metadata'
     ");
     if($post_id !== NULL){
-        // file already registered
-        return true;
+        return [false, 'already_registered', $post_id->post_id];
     }
     $filetype = wp_check_filetype( basename( $spl_file_info->getPathName() ), null );
     $post_id = wp_insert_attachment(
@@ -321,17 +320,18 @@ function register_uploaded_file($spl_file_info){
         );
     }
     // echo '<br>';
-    return true;
+    return [true, 'registered', $post_id];
 }
 function register_uploaded_from_dir($location_from_root){
     $abs_dir = realpath(get_home_path().$location_from_root);
     // print_r($abs_dir);
     $DirectoryI = new \RecursiveDirectoryIterator($abs_dir,\FilesystemIterator::SKIP_DOTS);
     $IteratorI = new \RecursiveIteratorIterator($DirectoryI);
-    $count = 0;
+    $results = [];
     foreach ($IteratorI as $file) {
-        register_uploaded_file($file);
-        $count++;
+        $result = register_uploaded_file($file);
+        array_push($result, $file);
+        array_push($results, $result);
     }
-    return $count;
+    return $results;
 }

@@ -24,8 +24,14 @@ $this_page_url = home_url(add_query_arg( NULL, NULL ));
 <?php
 
     if(isset($_POST['action']) && $_POST['action'] == 'register_uploaded_from_dir' && isset($_POST['location'])){
-        $count = register_uploaded_from_dir($_POST['location']);
-        echo "<div class=\"alert alert-info\">Processed {$count} files.</div>";
+        $results = register_uploaded_from_dir($_POST['location']);
+        $count = sizeof($results);
+        // print_r($results);
+        echo "<div class=\"alert alert-info\"><p>Processed <b>{$count}</b> files.</p><textarea style=\"width:100%;min-height:250px;\">";
+        foreach($results as $result) {
+            vprintf("%b\t%s\t%s\t%s\n",$result);
+        }
+        echo "</textarea></div>";
     }
 
 ?>
@@ -33,7 +39,7 @@ $this_page_url = home_url(add_query_arg( NULL, NULL ));
 <?php // View ?>
 
 <h1>LinkClick</h1>
-    <section>
+<section>
     <h2> Register uploaded files</h2>
     <form action="<?php echo $this_page_url; ?>" method="post">
     <p><input type="hidden" name="action" value="register_uploaded_from_dir"></p>

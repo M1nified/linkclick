@@ -17,6 +17,36 @@ global $lc_db_link;
 global $lc_db_log;
 global $lc_db_category;
 
+$this_page_url = home_url(add_query_arg( NULL, NULL ));
+
+?>
+
+<?php
+
+    if(isset($_POST['action']) && $_POST['action'] == 'register_uploaded_from_dir' && isset($_POST['location'])){
+        $count = register_uploaded_from_dir($_POST['location']);
+        echo "<div class=\"alert alert-info\">Processed {$count} files.</div>";
+    }
+
+?>
+
+<?php // View ?>
+
+<h1>LinkClick</h1>
+    <section>
+    <h2> Register uploaded files</h2>
+    <form action="<?php echo $this_page_url; ?>" method="post">
+    <p><input type="hidden" name="action" value="register_uploaded_from_dir"></p>
+    <p><input type="text" name="location" placeholder="Directory relative to wp_root" required></p>
+    <p><input type="submit"></p>
+    </form>
+</section>
+
+<?php
+
+
+// ==================================================================
+
 echo "<h1 style=\"color:red;\">TA STRONA NIE DZIALA</h1>";
 
 // v 1.0.1

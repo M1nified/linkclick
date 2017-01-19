@@ -267,3 +267,71 @@ function save_meta(){
         }
     }
 }
+
+function register_uploaded_file($spl_file_info){
+    // print_r($spl_file_info);
+    $relative_path = str_replace(realpath(get_home_path()),'',$spl_file_info->getPathName());
+    $relative_path_slashed = str_replace('\\','/',$relative_path);
+    // print_r($relative_path_slashed);
+    // echo '<br>';
+    global $wpdb;
+    $post_id = $wpdb->get_row(
+        "SELECT
+            `post_id`
+        FROM {$wpdb->postmeta}
+        WHERE   `meta_value` LIKE '%{$relative_path_slashed}%'
+                AND 
+                `meta_key` LIKE '_wp_attachment_metadata'
+    ");
+    if($post_id !== NULL){
+        // file already registered
+        return true;
+    }
+    $filetype = wp_check_filetype( basename( $spl_file_info->getPathName() ), null );
+    $post_id = wp_insert_attachment(
+        [
+            'guid'              => get_home_url( 0, $relative_path_slashed ),
+            'post_mime_type'    => $filetype['type'],
+            'post_title'        => preg_replace( '/\.[^.]+$/', '', $spl_file_info->getFileName() ),
+            'post_content'      => '',
+            'post_status'       => 'inherit'
+        ],
+        $spl_file_info->getFileName(),
+        // $relative_path,
+        0 
+    );
+    // echo $post_id;
+    $upload_dir = wp_upload_dir();
+    // print_r($upload_dir);
+    $relative_to_wpuploads_path = str_replace(str_replace('\\','/',$upload_dir['basedir']),'',str_replace('\\','/',$spl_file_info->getPathName()));
+    // echo $relative_to_wpuploads_path;
+    if($attachment_data = wp_generate_attachment_metadata( $post_id, $spl_file_info->getFileName() )){
+        // print_r($attachment_data);
+        $update_result = wp_update_attachment_metadata( $post_id, $attachment_data );
+        // print_r($update_result);
+    }else{
+        $meta_dir = array(
+            'post_id' => $post_id,
+            'meta_key' => '_wp_attachment_metadata',
+            'meta_value' => $relative_path_slashed
+        );
+        $attach_id = $wpdb->insert(
+            $wpdb->postmeta,
+            $meta_dir
+        );
+    }
+    // echo '<br>';
+    return true;
+}
+function register_uploaded_from_dir($location_from_root){
+    $abs_dir = realpath(get_home_path().$location_from_root);
+    // print_r($abs_dir);
+    $DirectoryI = new \RecursiveDirectoryIterator($abs_dir,\FilesystemIterator::SKIP_DOTS);
+    $IteratorI = new \RecursiveIteratorIterator($DirectoryI);
+    $count = 0;
+    foreach ($IteratorI as $file) {
+        register_uploaded_file($file);
+        $count++;
+    }
+    return $count;
+}

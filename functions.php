@@ -185,6 +185,9 @@ function log_download_of($LinkId){
         ]
     );
 }
+function print_dialog_1_form($post_id = null){
+    return print_dialog_1(true, $post_id);
+}
 function print_dialog_1($print_form = true, $post_id = null){
     global $wpdb;
     global $lc_db_category;
@@ -206,7 +209,7 @@ function print_dialog_1($print_form = true, $post_id = null){
     <?php echo $print_form === true ? "<form method=\"post\">" : ""; ?>
         <input type="hidden" name="linkclick-action" value="save">
         <input type="hidden" name="linkclick-post-id" value="<?php echo $post_id != null ? $post_id : ""; ?>" id="linkclick-dialog-1-post-id">
-        <p>Category: <select name="linkclick-category-id">
+        <p>Category: <br><select name="linkclick-category-id" style="min-width:100%;">
             <option value=""></option>
             <?php
             if(isset($meta_data) && isset($meta_data[$meta_category_id][0])){
@@ -224,7 +227,7 @@ function print_dialog_1($print_form = true, $post_id = null){
             }
             ?>
         </select></p>
-        <p>Lock type: <select name="linkclick-lock-id">
+        <p>Lock type: <br><select name="linkclick-lock-id" style="min-width:100%;">
             <option value=""></option>
             <?php
             if(isset($meta_data) && isset($meta_data[$meta_lock_id][0])){

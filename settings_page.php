@@ -27,7 +27,7 @@ $this_page_url = home_url(add_query_arg( NULL, NULL ));
         $results = register_uploaded_from_dir($_POST['location']);
         $count = sizeof($results);
         // print_r($results);
-        echo "<div class=\"alert alert-info\"><p>Processed <b>{$count}</b> files.</p><textarea style=\"width:100%;min-height:250px;\">";
+        echo "<div class=\"alert alert-info\"><p>Processed <b>{$count}</b> files.</p><textarea style=\"width:100%;min-height:250px;white-space:pre;\" readonly>";
         foreach($results as $result) {
             vprintf("%b\t%s\t%s\t%s\n",$result);
         }

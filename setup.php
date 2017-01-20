@@ -144,12 +144,18 @@ function media_value( $column_name, $id ) {
     global $wpdb;
     global $lc_db_link;
     global $meta_lock_id;
+    global $meta_category_id;
     // $meta = wp_get_attachment_metadata($id);
     // print_r($id);
-    $info = $wpdb->get_row("SELECT p.*,ll.*, pm.meta_value as lc_category_id
+    $info = $wpdb->get_row("SELECT
+        p.*,
+        ll.*,
+        pm.meta_value as lc_lock_id,
+        pmcat.meta_value as lc_category_id
         FROM {$wpdb->posts} p
         left join {$lc_db_link} ll on ll.PostId = p.ID
         left join {$wpdb->postmeta} pm on pm.post_id = p.ID and pm.meta_key = '{$meta_lock_id}'
+        left join {$wpdb->postmeta} pmcat on pmcat.post_id = p.ID and pmcat.meta_key = '{$meta_category_id}'
         WHERE p.ID = {$id}");
     //print_r($info);
     /*<input type="hidden" name="mode" value="linkclick_update">
@@ -165,7 +171,7 @@ function media_value( $column_name, $id ) {
         <?php
     }*/
     ?>
-    <p><button class="button button-primary linkclick-btn-secure" type="button" data-post-id="<?php echo $id; ?>">Security</button></p>
+    <p><button class="button button-primary linkclick-btn-secure" type="button" data-post-id="<?php echo $id; ?>" data-linkclick-category-id="<?php echo $info->lc_category_id; ?>" data-linkclick-lock-id="<?php echo $info->lc_lock_id; ?>" >Security</button></p>
     <?php
     /* <span class="badge"><?php echo str_replace("~","&nbsp;",str_pad($info->lc_category_id ? $info->lc_category_id : 0,3,"~",STR_PAD_LEFT)); ?></span> */
     //Used a few PHP functions cause 'file' stores local url to file not filename

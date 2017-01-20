@@ -236,5 +236,5 @@ add_action('load-post-new.php',__NAMESPACE__.'\setup_boxes');
 
 add_action( 'admin_enqueue_scripts', __NAMESPACE__.'\load_bootstrap' );
 function load_bootstrap($hook) {
-    wp_enqueue_style( 'bootstrap_css', plugins_url('lib/bootstrap/css/bootstrap.min.css', __FILE__) );
+    wp_enqueue_style( 'bootstrap_css', plugins_url('lib/bootstrap/css/bootstrap.css', __FILE__) );
 }

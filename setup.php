@@ -244,7 +244,7 @@ function append_query_string( $url, $post, $leavename=false ) {
     if ( in_array($post->post_type,['post','page','attachment'])) {
         $is_access = is_access($post->ID);
         if($is_access !== true){
-            print_r($is_access);
+            // print_r($is_access);
             $url = wp_login_url( $url, false );
         }
 	}

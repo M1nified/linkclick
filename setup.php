@@ -238,3 +238,15 @@ add_action( 'admin_enqueue_scripts', __NAMESPACE__.'\load_bootstrap' );
 function load_bootstrap($hook) {
     wp_enqueue_style( 'bootstrap_css', plugins_url('lib/bootstrap/css/bootstrap.css', __FILE__) );
 }
+
+add_filter( 'post_link', __NAMESPACE__.'\append_query_string', 10, 3 );
+function append_query_string( $url, $post, $leavename=false ) {
+    if ( in_array($post->post_type,['post','page','attachment'])) {
+        $is_access = is_access($post->ID);
+        if($is_access !== true){
+            print_r($is_access);
+            $url = wp_login_url( $url, false );
+        }
+	}
+	return $url;
+}

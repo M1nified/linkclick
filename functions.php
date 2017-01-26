@@ -103,18 +103,17 @@ function get_post_id_for_url($url){
         return $post->ID;
     }
 }
-function is_access_url($url){
+function is_access_url($url,$log_if_granted=false){
     $post_id = get_post_id_for_url($url);
-    return $post_id == false ? true : is_access($post_id);
+    return $post_id == false ? true : is_access($post_id,$log_if_granted);
 }
-function is_access($post_id){
+function is_access($post_id,$log_if_granted=false){
     global $meta_lock_id;
     $lock_id = get_metadata( 'post', $post_id, $meta_lock_id, true);
     if(!isset($lock_id) || $lock_id == "" || $lock_id === false){
         // not set
         return true;
     }
-    // echo $lock_id;
     // Securities
     switch ($lock_id) {
         case 1:
@@ -127,12 +126,18 @@ function is_access($post_id){
             }
             $user_has_license = get_metadata( 'user', $user_id, 'ss_has_serial', true );
             if($user_has_license == true){
+                if($log_if_granted) log_visit($post_id,$user_id);
                 return true;
             }
             return 2;
             break;
         case 3:
-            return is_user_logged_in() == 1 ? true : 3;
+            if(is_user_logged_in() == 1){
+                if($log_if_granted) log_visit($post_id);
+                return true;
+            }else{
+                return 3;
+            }
             break;
         default:
 
@@ -337,4 +342,29 @@ function register_uploaded_from_dir($location_from_root){
         array_push($results, $result);
     }
     return $results;
+}
+function log_visit($post_id=null,$user_id=null,$log_date=null){
+    if( !isset( $post_id ) || $post_id == null ){
+        $post_id = get_the_ID();
+    }
+    if( !isset( $user_id ) || $user_id == null){
+        $user_id = get_current_user_id();
+    }
+    if( !isset( $log_date ) || $log_date == null){
+        $log_date = current_time( 'mysql' );
+    }
+    if(in_array(null,[$post_id,$user_id,$log_date])){
+        return false;
+    }
+    global $wpdb;
+    global $lc_db_log;
+    $count = $wpdb->insert(
+        $lc_db_log,
+        [
+            'post_id'   => $post_id,
+            'user_id'   => $user_id,
+            'log_date'  => $log_date
+        ]
+    );
+    return $count;
 }

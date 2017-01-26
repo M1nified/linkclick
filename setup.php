@@ -20,7 +20,7 @@
 add_action( 'init', 'linkclick\shall_lock' );
 function shall_lock() {
     if (preg_match('/\/wp-content\/uploads\//m',$_SERVER['REQUEST_URI']) === 1) {
-        $is_access = is_access_url($_SERVER['REQUEST_URI']);
+        $is_access = is_access_url($_SERVER['REQUEST_URI'], true);
         if($is_access === true){
             $realpathname = realpath("{$_SERVER['DOCUMENT_ROOT']}{$_SERVER['REQUEST_URI']}");
             if(!$realpathname){
@@ -53,7 +53,7 @@ function action_loop_start( $wp_query ) {
     $posts = $wp_query->posts;
     if(is_singular( )){
         foreach ($posts as $key => $post) {
-            $is_access = is_access($post->ID);
+            $is_access = is_access($post->ID, true);
             if($is_access === true){
                 continue;
             }

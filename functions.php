@@ -114,50 +114,11 @@ function is_access($post_id,$log_if_granted=false){
         // not set
         return true;
     }
-    // Securities
-    switch ($lock_id) {
-        case 1:
-            return true;
-            break;
-        case 2:
-            $user_id = get_current_user_id();
-            if($user_id == 0){
-                return 2;
-            }
-            $user_has_license = get_metadata( 'user', $user_id, 'ss_has_serial', true );
-            if($user_has_license == true){
-                if($log_if_granted) log_visit($post_id,$user_id);
-                return true;
-            }
-            return 2;
-            break;
-        case 3:
-            if(is_user_logged_in() == 1){
-                if($log_if_granted) log_visit($post_id);
-                return true;
-            }else{
-                return 3;
-            }
-            break;
-        default:
-
-            break;
+    $is_access = apply_filters( 'linkclick_access', true, $post_id, $lock_id );
+    if($is_access === true && $log_if_granted){
+        log_visit($post_id);
     }
-    // OLD --
-    global $wpdb;
-    global $lc_db_link;
-    $record = $wpdb->get_row("SELECT lcl.Secure FROM {$wpdb->posts} p
-    LEFT JOIN {$lc_db_link} lcl ON p.ID = lcl.PostId
-    WHERE p.ID = {$post_id}");
-    // echo 1;
-    // print_r($record);
-    if($record === NULL || $record->Secure != true){
-        // echo 2;
-        return true;
-    }else{
-        // echo 3;
-        return is_user_logged_in() == 1 ? true : false;
-    }
+    return $is_access;
 }
 
 function log_download_of_path($filepathname){

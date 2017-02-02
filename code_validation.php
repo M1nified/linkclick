@@ -16,17 +16,8 @@ if($user_id == 0){
     wp_redirect( $redirect_to );
     exit;
 }
-switch ($_POST['code_type']) {
-    case 'ss_has_serial':
-        //
-        if(eregi("^[[:alpha:]]{2,4}[0-9]{3}[a-z0-9-]*$",$_POST['code'])){
-            update_metadata( 'user', $user_id, 'ss_has_serial', true );
-        }
-        break;
-    
-    default:
-        # code...
-        break;
-}
+
+do_action( 'linkclick_code_validation', $_POST['code_type'], $_POST['code']);
+
 wp_redirect( $redirect_to );
 exit;

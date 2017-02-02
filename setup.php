@@ -15,9 +15,9 @@
     );
  }
 
- add_action('admin_menu','linkclick\add_menu_settings');
+ add_action('admin_menu',__NAMESPACE__.'\add_menu_settings');
 
-add_action( 'init', 'linkclick\shall_lock' );
+add_action( 'init', __NAMESPACE__.'\shall_lock' );
 function shall_lock() {
     if (preg_match('/\/wp-content\/uploads\//m',$_SERVER['REQUEST_URI']) === 1) {
         $is_access = is_access_url($_SERVER['REQUEST_URI'], true);
@@ -51,54 +51,24 @@ function shall_lock() {
 function action_loop_start( $wp_query ) {
     // print_r($wp_query->posts);
     $posts = $wp_query->posts;
-    if(is_singular( )){
-        foreach ($posts as $key => $post) {
-            $is_access = is_access($post->ID, true);
-            if($is_access === true){
-                continue;
-            }
-            switch ($is_access) {
-                case 3:
-                    $login_url = wp_login_url( get_permalink() );
-                    $post->post_content = "<p class=\"text-center\">"._x("Treść dostępna po zalogowaniu", 'default')."</p><p class=\"text-right\"><a class=\"btn btn-primary\" href=\"{$login_url}\">"._x("Logowanie",'default')."</a></p>";
-                    break;
-                
-                case 2:
-                    if(is_user_logged_in() != 1){
-                        $login_url = wp_login_url( get_permalink() );
-                        $post->post_content = "<p class=\"text-center\">"._x("Treść dostępna po zalogowaniu", 'default')."</p><p class=\"text-right\"><a class=\"btn btn-primary\" href=\"{$login_url}\">"._x("Logowanie",'default')."</a></p>";
-                    }elseif(get_metadata( 'user', get_current_user_id(), 'ss_has_serial', true ) != true){
-                        global $code_validation_url;
-                        $post->post_content = "<p>Treść dostępna po podaniu klucza licencji</p><form method=\"post\" action=\"{$code_validation_url}\"><input type=\"hidden\" name=\"redirect_to\" value=\"".get_permalink()."\"><input type=\"hidden\" name=\"code_type\" value=\"ss_has_serial\"><p><label>Numer seryjny: <input name=\"code\" type=\"text\" placeholder=\"\" required></label></p><p><input class=\"button button-primary\" type=\"submit\"></p></form>";
-                    }
-                
-                default:
-                    # code...
-                    break;
-            }
-
+    foreach ($posts as $key => $post) {
+        $is_access = is_access($post->ID, true);
+        if($is_access === true){
+            continue;
         }
-    }else{
-        foreach ($posts as $key => $post) {
-            $is_access = is_access($post->ID);
-            if($is_access !== true){
-                $login_url = wp_login_url( $_SERVER['REQUEST_URI'] );
-                $post->post_content = $post->post_excerpt;//."<p><a href=\"{$login_url}\" class=\"btn btn-primary\" role=\"button\">"._x( 'Log in', 'default' )."</a></p>";
-                // $post->post_excerpt = "hidden";
-            }
-        }
+        do_action( 'linkclick_permission_denied', $post, $is_access );
     }
 } 
 add_action( 'loop_start', __NAMESPACE__.'\action_loop_start', 10, 1 ); 
 
-// add_filter('manage_post_posts_columns', 'linkclick\add_quick_edit_column');
+// add_filter('manage_post_posts_columns', __NAMESPACE__.'\add_quick_edit_column');
 // function add_quick_edit_column($columns) {
 //     $columns['widget_set'] = 'LinkClick';
 //     return $columns;
 // }
 
-/*add_action('manage_posts_custom_column', 'linkclick\add_column_content', 10, 2);
-add_action('manage_pages_custom_column', 'linkclick\add_column_content', 10, 2);
+/*add_action('manage_posts_custom_column', __NAMESPACE__.'\add_column_content', 10, 2);
+add_action('manage_pages_custom_column', __NAMESPACE__.'\add_column_content', 10, 2);
 function add_column_content($column_name, $id) {
     switch ($column_name) {
     case 'widget_set':
@@ -107,7 +77,7 @@ function add_column_content($column_name, $id) {
     }
 }
 
-add_action( 'quick_edit_custom_box', 'linkclick\add_quick_edit', 'page');
+add_action( 'quick_edit_custom_box', __NAMESPACE__.'\add_quick_edit', 'page');
 function add_quick_edit($column_name, $post_type){
     ?>
     <fieldset class="inline-edit-col-right inline-edit-book" style="clear:both;">
@@ -187,20 +157,20 @@ function media_column_sortable( $cols ) {
 
 // Hook actions to admin_init
 function hook_new_media_columns() {
-    add_filter( 'manage_media_columns', 'linkclick\media_column' );
-    add_action( 'manage_media_custom_column', 'linkclick\media_value', 10, 2 );
-    add_filter( 'manage_upload_sortable_columns', 'linkclick\media_column_sortable' );
+    add_filter( 'manage_media_columns', __NAMESPACE__.'\media_column' );
+    add_action( 'manage_media_custom_column', __NAMESPACE__.'\media_value', 10, 2 );
+    add_filter( 'manage_upload_sortable_columns', __NAMESPACE__.'\media_column_sortable' );
 
-    add_filter( 'manage_posts_columns', 'linkclick\media_column' );
-    add_action( 'manage_posts_custom_column', 'linkclick\media_value', 10, 2 );
+    add_filter( 'manage_posts_columns', __NAMESPACE__.'\media_column' );
+    add_action( 'manage_posts_custom_column', __NAMESPACE__.'\media_value', 10, 2 );
 
-    add_filter( 'manage_pages_columns', 'linkclick\media_column' );
-    add_action( 'manage_pages_custom_column', 'linkclick\media_value', 10, 2 );
+    add_filter( 'manage_pages_columns', __NAMESPACE__.'\media_column' );
+    add_action( 'manage_pages_custom_column', __NAMESPACE__.'\media_value', 10, 2 );
     save_meta();
 }
-add_action( 'admin_init', 'linkclick\hook_new_media_columns' );
+add_action( 'admin_init', __NAMESPACE__.'\hook_new_media_columns' );
 
-add_action('template_redirect','linkclick\template_redirect');
+add_action('template_redirect',__NAMESPACE__.'\template_redirect');
 function template_redirect() {
     
 }

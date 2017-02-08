@@ -339,10 +339,10 @@ function is_allowed_bot(){
     global $this_bot_is_allowed;
     if(isset($this_bot_is_allowed)) return $this_bot_is_allowed;
     if(preg_match('/('.implode('|',$bots_allowed_agents).')/i',$_SERVER['HTTP_USER_AGENT'])===1){
-        echo 'is_bot';
+        // echo 'is_bot';
         $hostname = gethostbyaddr($_SERVER['REMOTE_ADDR']);
         if(preg_match('/('.implode('|',$bots_allowed_domains).')/i',$hostname)===1){
-            echo 'is_ok';
+            // echo 'is_ok';
             $this_bot_is_allowed = true;
             return true;
         }

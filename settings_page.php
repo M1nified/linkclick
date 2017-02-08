@@ -72,7 +72,7 @@ $this_page_url = home_url(add_query_arg( NULL, NULL ));
 <h3>Add Category</h3>
 <form action="<?php echo $_SERVER['REQUEST_URI']; ?>" method="post">
     <input type="hidden" name="action" value="add_category">
-    <input type="text" name="Name" placeholder="Category name..." required>
+    <input type="text" name="Name" placeholder="New category name..." required>
     <select name="MasterCategoryID">
         <option value="">No master category</option><?php
         foreach ($categories as $key => $category) {

@@ -40,7 +40,7 @@ function get_categories_tree(){
             return $cat->MasterCategoryID == $masterid2;
         });
         foreach ($kids as $key => $cat) {
-            $cat->DisplayName = str_pad("",$indentation_level,"-")." ".$cat->Name;
+            $cat->DisplayName = str_replace("-","- ",str_pad("",$indentation_level,"-"))." ".$cat->Name;
             $tree[] = $cat;
             add_subcategories($cat->CategoryID,$indentation_level+1);
         }

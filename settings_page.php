@@ -41,8 +41,11 @@ $this_page_url = home_url(add_query_arg( NULL, NULL ));
             $lc_db_category,
             $insert_array
         )){
-        print("Added:");
-        print_r($insert_array);
+            echo '<pre>';
+            print("Added:");
+            print_r($insert_array);
+            echo '</pre>';
+        }
     }
 
 

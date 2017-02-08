@@ -2,7 +2,7 @@
 
 ## Adding category
 
-Go to `Settings -> LinkClick -> Add Category Section`
+Go to `Settings -> LinkClick -> Add Category Section`   
 ![Add Category](manual/settings_add_category.jpg)
 
 ## Defining access filter

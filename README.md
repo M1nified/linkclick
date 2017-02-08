@@ -2,7 +2,7 @@
 
 ## Adding category
 
-Go to `Settings -> LinkClick -> Add Category Section`
+Go to `Settings -> LinkClick -> Add Category Section`   
 ![Add Category](manual/settings_add_category.jpg)
 
 ## Defining access filter
@@ -56,6 +56,7 @@ function linkclick_permission_denied_action(
         }
     }
 }
+```
 
 ## Redefining permalinks for permission denial
 
@@ -84,6 +85,33 @@ function linkclick_permission_denied_permalink_filter(
     // By default the original url should be returned
     return $url;
 }
+```
+
+## Access granted by the code
+
+```php
+add_action(
+    'linkclick_code_validation',
+    __NAMESPACE__.'\linkclick_code_validation_action',
+    10,
+    2
+);
+function linkclick_code_validation_action(
+    $code_name,     // String - name/type of the code 
+    $the_code       // String - code given by the user
+){
+    if( $code_name === 'my_app_serial_number' ){
+        if( serial_number_validation( $the_code ) ){
+            update_metadata(
+                'user',
+                get_current_user_id(),
+                'my_app_serial_number',
+                true
+            );
+        }
+    }
+}
+```
 
 ## Protecting uploads
 ``` htaccess

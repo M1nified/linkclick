@@ -118,6 +118,9 @@ function is_access($post_id,$log_if_granted=false){
     if($is_access === true && $log_if_granted){
         log_visit($post_id);
     }
+    if($is_access !== true){
+        if( is_allowed_bot() === true ) return true;
+    }
     return $is_access;
 }
 
@@ -328,4 +331,22 @@ function log_visit($post_id=null,$user_id=null,$log_date=null){
         ]
     );
     return $count;
+}
+
+function is_allowed_bot(){
+    global $bots_allowed_agents;
+    global $bots_allowed_domains;
+    global $this_bot_is_allowed;
+    if(isset($this_bot_is_allowed)) return $this_bot_is_allowed;
+    if(preg_match('/('.implode('|',$bots_allowed_agents).')/i',$_SERVER['HTTP_USER_AGENT'])===1){
+        echo 'is_bot';
+        $hostname = gethostbyaddr($_SERVER['REMOTE_ADDR']);
+        if(preg_match('/('.implode('|',$bots_allowed_domains).')/i',$hostname)===1){
+            echo 'is_ok';
+            $this_bot_is_allowed = true;
+            return true;
+        }
+    }
+    $this_bot_is_allowed = false;
+    return false;
 }

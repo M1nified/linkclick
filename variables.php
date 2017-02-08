@@ -21,3 +21,18 @@ $meta_category_id = '_linkclick-category_id';
 
 //
 $code_validation_url = plugins_url(basename(plugin_dir_path(__FILE__)).'/code_validation.php');
+
+// bots
+global $bots_allowed_agents;
+global $bots_allowed_domains;
+$bots_allowed_agents = [
+    'Google',
+    'msnbot',
+    'bingbot'
+];
+$bots_allowed_domains = [
+    'googlebot.com',
+    'google.com',
+    'search.msn.com'
+    // 'k125'
+];

@@ -110,7 +110,7 @@ function is_access_url($url,$log_if_granted=false){
 function is_access($post_id,$log_if_granted=false){
     global $meta_lock_id;
     $lock_id = get_metadata( 'post', $post_id, $meta_lock_id, true);
-    if(!isset($lock_id) || $lock_id == "" || $lock_id === false){
+    if( !isset($lock_id) || $lock_id == "" || $lock_id === false || current_user_can( 'publish_pages' ) ){
         // not set
         return true;
     }

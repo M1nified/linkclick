@@ -51,8 +51,9 @@ function shall_lock() {
 function action_loop_start( $wp_query ) {
     // print_r($wp_query->posts);
     $posts = $wp_query->posts;
+    $is_singular = is_singular( );
     foreach ($posts as $key => $post) {
-        $is_access = is_access($post->ID, true);
+        $is_access = is_access($post->ID, $is_singular);
         if($is_access === true){
             continue;
         }

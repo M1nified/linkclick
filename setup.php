@@ -37,7 +37,6 @@ function shall_lock() {
             header('Content-Type: '.$filetype['type']);
             header("Content-Transfer-Encoding: Binary"); 
             header("Content-Disposition: filename=\"" . basename($realpathname) . "\"");
-            // print_r(filesize($realpathname));
             header("Content-Length: ".filesize($realpathname));
             ob_clean();
             flush(); 

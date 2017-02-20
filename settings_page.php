@@ -63,8 +63,8 @@ $this_page_url = home_url(add_query_arg( NULL, NULL ));
     <h2> Register uploaded files</h2>
     <form action="<?php echo $this_page_url; ?>" method="post">
     <p><input type="hidden" name="action" value="register_uploaded_from_dir"></p>
-    <p><input type="text" name="location" placeholder="Directory relative to wp_root" required></p>
-    <p><input type="submit"></p>
+    <p><input type="text" name="location" placeholder="Directory relative to wp_root" title="Directory relative to wp_root" required></p>
+    <p><input type="submit" class="button"></p>
     </form>
 </section>
 
@@ -79,7 +79,7 @@ $this_page_url = home_url(add_query_arg( NULL, NULL ));
             echo "<option value=\"{$category->CategoryID}\">{$category->DisplayName}</option>";
         }
     ?></select>
-    <input type="submit">
+    <input type="submit" class="button">
 </form>
 </section>
 

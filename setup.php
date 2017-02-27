@@ -20,6 +20,7 @@
 add_action( 'init', __NAMESPACE__.'\shall_lock' );
 function shall_lock() {
     if (preg_match('/\/wp-content\/uploads\//m',$_SERVER['REQUEST_URI']) === 1) {
+        error_reporting(0);
         $is_access = is_access_url($_SERVER['REQUEST_URI'], true);
         if($is_access === true){
             $realpathname = realpath("{$_SERVER['DOCUMENT_ROOT']}{$_SERVER['REQUEST_URI']}");

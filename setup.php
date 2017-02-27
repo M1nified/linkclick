@@ -37,7 +37,7 @@ function shall_lock() {
             log_download_of_path($_SERVER['REQUEST_URI']);
             header('Content-Type: '.$filetype['type']);
             header("Content-Transfer-Encoding: Binary"); 
-            header("Content-Disposition: filename=\"" . basename($realpathname) . "\"");
+            header("Content-Disposition: attachment; filename=\"" . basename($realpathname) . "\"");
             header("Content-Length: ".filesize($realpathname));
             ob_clean();
             flush(); 

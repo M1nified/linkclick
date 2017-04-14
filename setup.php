@@ -35,12 +35,14 @@ function shall_lock() {
             }
             $filetype = wp_check_filetype($realpathname);
             log_download_of_path($_SERVER['REQUEST_URI']);
+            set_time_limit(0);
+            header($_SERVER['SERVER_PROTOCOL'].' 200 OK');
             header('Content-Type: '.$filetype['type']);
             header("Content-Transfer-Encoding: Binary"); 
             header("Content-Disposition: attachment; filename=\"" . basename($realpathname) . "\"");
             header("Content-Length: ".filesize($realpathname));
-            ob_clean();
-            flush(); 
+            @ob_clean();
+            @flush(); 
             // @readfile($realpathname);
             @readfile_chunked($realpathname);
             exit(); 

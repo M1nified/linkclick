@@ -41,7 +41,8 @@ function shall_lock() {
             header("Content-Length: ".filesize($realpathname));
             ob_clean();
             flush(); 
-            @readfile($realpathname);
+            // @readfile($realpathname);
+            @readfile_chunked($realpathname);
             exit(); 
         }else{
             auth_redirect();

@@ -1,5 +1,7 @@
 <?php namespace linkclick;
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
+define("CHUNK_SIZE", 1024*1024); // Size (in bytes) of files chunk
+
 // include_once realpath('../../../wp-load.php');
 include_once 'variables.php';
 
@@ -349,4 +351,30 @@ function is_allowed_bot(){
     }
     $this_bot_is_allowed = false;
     return false;
+}
+
+// Read a file and display its content chunk by chunk
+// Based on http://teddy.fr/2007/11/28/how-serve-big-files-through-php/
+function readfile_chunked($filename, $retbytes = TRUE)
+{
+    $buffer = "";
+    $cnt =0;
+    $handle = fopen($filename, "rb");
+    if ($handle === false) {
+        return false;
+    }
+    while (!feof($handle)) {
+        $buffer = fread($handle, CHUNK_SIZE);
+        echo $buffer;
+        ob_flush();
+        flush();
+        if ($retbytes) {
+            $cnt += strlen($buffer);
+        }
+    }
+    $status = fclose($handle);
+    if ($retbytes && $status) {
+        return $cnt; // return num. bytes delivered like readfile() does.
+    }
+    return $status;
 }

@@ -46,6 +46,19 @@ $this_page_url = home_url(add_query_arg( NULL, NULL ));
             print_r($insert_array);
             echo '</pre>';
         }
+    }elseif(isset($_POST['action']) && $_POST['action'] === 'set_download_settings'){
+        if(array_key_exists('tmp_on', $_POST) && $_POST['tmp_on'] === 'on')
+        {
+            update_option( '_linkclick_download_tmp_status', 1);
+            update_option( '_linkclick_download_tmp_size_min', $_POST['tmp_size_min'] );
+            update_option( '_linkclick_download_tmp_dir', $_POST['tmp_dir'] );
+            update_option( '_linkclick_download_tmp_url', $_POST['tmp_url'] );
+        }
+        else
+        {
+            delete_option( '_linkclick_download_tmp_status' );
+            // delete_option( '_linkclick_download_tmp_size_min' );
+        }
     }
 
 
@@ -54,6 +67,10 @@ $this_page_url = home_url(add_query_arg( NULL, NULL ));
      */
 
     $categories = get_categories_tree();
+    $download_tmp_status = get_option( '_linkclick_download_tmp_status', 0 );
+    $download_tmp_size_min = get_option( '_linkclick_download_tmp_size_min', 0 );
+    $download_tmp_dir = get_option( '_linkclick_download_tmp_dir', '' );
+    $download_tmp_url = get_option( '_linkclick_download_tmp_url', '' );
 
 ?>
 
@@ -69,17 +86,29 @@ $this_page_url = home_url(add_query_arg( NULL, NULL ));
 </section>
 
 <section>
-<h3>Add Category</h3>
-<form action="<?php echo $_SERVER['REQUEST_URI']; ?>" method="post">
-    <input type="hidden" name="action" value="add_category">
-    <input type="text" name="Name" placeholder="New category name..." required>
-    <select name="MasterCategoryID">
-        <option value="">No master category</option><?php
-        foreach ($categories as $key => $category) {
-            echo "<option value=\"{$category->CategoryID}\">{$category->DisplayName}</option>";
-        }
-    ?></select>
-    <input type="submit" class="button">
-</form>
+    <h2>Add Category</h2>
+    <form action="<?php echo $_SERVER['REQUEST_URI']; ?>" method="post">
+        <input type="hidden" name="action" value="add_category">
+        <input type="text" name="Name" placeholder="New category name..." required>
+        <select name="MasterCategoryID">
+            <option value="">No master category</option><?php
+            foreach ($categories as $key => $category) {
+                echo "<option value=\"{$category->CategoryID}\">{$category->DisplayName}</option>";
+            }
+        ?></select>
+        <input type="submit" class="button">
+    </form>
+</section>
+
+<section>
+    <h2>Download settings</h2>
+    <form action="<?php echo $_SERVER['REQUEST_URI']; ?>" method="post">
+        <input type="hidden" name="action" value="set_download_settings">
+        <p><label><input type="checkbox" name="tmp_on" <?php if($download_tmp_status == 1) echo 'checked'; ?>> Create temporary files for downloads over </label>
+        <label><input type="number" name="tmp_size_min" value="<?php echo $download_tmp_size_min; ?>"> bytes.</label></p>
+        <p><label>Tmp files dir: <input type="text" name="tmp_dir" value="<?php echo $download_tmp_dir; ?>" placeholder="/root/server/httpd/tmp"></label></p>
+        <p><label>Tmp files url: <input type="text" name="tmp_url" value="<?php echo $download_tmp_url; ?>" placeholder="http://example.com/tmp"></label></p>
+        <input type="submit" class="button">
+    </form>
 </section>
 

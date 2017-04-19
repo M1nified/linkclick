@@ -35,16 +35,79 @@ function shall_lock() {
             }
             $filetype = wp_check_filetype($realpathname);
             log_download_of_path($_SERVER['REQUEST_URI']);
-            set_time_limit(0);
-            header($_SERVER['SERVER_PROTOCOL'].' 200 OK');
-            header('Content-Type: '.$filetype['type']);
-            header("Content-Transfer-Encoding: Binary"); 
-            header("Content-Disposition: attachment; filename=\"" . basename($realpathname) . "\"");
-            header("Content-Length: ".filesize($realpathname));
-            @ob_clean();
-            @flush(); 
-            // @readfile($realpathname);
-            @readfile_chunked($realpathname);
+            $download_tmp_size_min = get_option( '_linkclick_download_tmp_size_min', 0 );
+            $download_tmp_status = get_option( '_linkclick_download_tmp_status', 0 );
+            $basename = basename($realpathname);
+            if( $download_tmp_status == 0 || filesize($realpathname) < $download_tmp_size_min )
+            {
+                set_time_limit(0);
+                header($_SERVER['SERVER_PROTOCOL'].' 200 OK');
+                header('Content-Type: '.$filetype['type']);
+                header("Content-Transfer-Encoding: Binary"); 
+                header("Content-Disposition: attachment; filename=\"" . $basename . "\"");
+                header("Content-Length: ".filesize($realpathname));
+                @ob_clean();
+                @flush(); 
+                // @readfile($realpathname);
+                @readfile_chunked($realpathname);
+            }
+            else
+            {
+                try{
+
+                    $download_tmp_dir = get_option( '_linkclick_download_tmp_dir', '' );    
+                    $download_tmp_url = get_option( '_linkclick_download_tmp_url', '' );
+                    $tmp_name_hash = md5($basename);
+                    $tmp_filepath;
+                    $link_url;
+                    $active_links = glob($download_tmp_dir.DIRECTORY_SEPARATOR."{$tmp_name_hash}*");
+                    // print_r($active_links);
+                    $should_make_new = true;
+                    if(sizeof($active_links) > 0)
+                    {
+                        $time = time();
+                        foreach($active_links as $link_path)
+                        {
+                            if(preg_match('/\.info$/i',$link_path))
+                            {
+                                continue;
+                            }
+                            $link_stat = lstat($link_path.'.info');
+                            if( $time - $link_stat['mtime'] < 7200 )
+                            {
+                                $should_make_new = false;
+                                $tmp_filepath = $link_path;
+                                $link_basename = basename($link_path);
+                                $link_url = $download_tmp_url.'/'.$link_basename;
+                                break;
+                            }
+                        }
+                    }
+                    if($should_make_new)
+                    {
+                        $tmp_name_id = uniqid();
+                        $tmp_name_ext = wp_check_filetype( $basename )['ext'];
+                        $tmp_name = "{$tmp_name_hash}.{$tmp_name_id}.{$tmp_name_ext}";
+                        $tmp_filepath = $download_tmp_dir.DIRECTORY_SEPARATOR.$tmp_name;
+                        $link_url = $download_tmp_url.'/'.$tmp_name;
+                        if(!(link($realpathname, $tmp_filepath) && realpath($tmp_filepath) !== false))
+                        {
+                            throw new \Exception('Failed to link file.', 1);
+                        }
+                        if(!touch($tmp_filepath.'.info'))
+                        {
+                            throw new \Exception('Failed to link file.', 2);
+                        }
+                    }
+                    header("Location: {$link_url}");
+                    exit();
+                    // die($tmp_filepath);
+                }
+                catch(\Exception $e)
+                {
+                    die("Download failed during preparation. Code: {$e->getCode()}");
+                }
+            }
             exit(); 
         }else{
             auth_redirect();

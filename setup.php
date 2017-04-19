@@ -53,15 +53,14 @@ function shall_lock() {
             }
             else
             {
-                try{
-
+                try
+                {
                     $download_tmp_dir = get_option( '_linkclick_download_tmp_dir', '' );    
                     $download_tmp_url = get_option( '_linkclick_download_tmp_url', '' );
                     $tmp_name_hash = md5($basename);
                     $tmp_filepath;
                     $link_url;
                     $active_links = glob($download_tmp_dir.DIRECTORY_SEPARATOR."{$tmp_name_hash}*");
-                    // print_r($active_links);
                     $should_make_new = true;
                     if(sizeof($active_links) > 0)
                     {
@@ -99,9 +98,8 @@ function shall_lock() {
                             throw new \Exception('Failed to link file.', 2);
                         }
                     }
-                    header("Location: {$link_url}");
+                    header("Location: {$link_url}", true, 302);
                     exit();
-                    // die($tmp_filepath);
                 }
                 catch(\Exception $e)
                 {

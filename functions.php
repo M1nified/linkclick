@@ -165,6 +165,7 @@ function print_dialog_1($print_form = true, $post_id = null){
     global $lc_db_settings;
     global $meta_lock_id;
     global $meta_category_id;
+    global $meta_date;
     $categories = get_categories_tree();
     $locks = $wpdb->get_results("SELECT
         s1.option_value as lock_id, s2.option_value as lock_name
@@ -217,6 +218,27 @@ function print_dialog_1($print_form = true, $post_id = null){
             ?>
 
         </select></p>
+        <?php
+        $lc_date = null;
+        if(isset($meta_data) && isset($meta_data[$meta_date][0])){
+            $lc_date = $meta_data[$meta_date][0];
+        }
+        ?>
+        <p>Date: <br><input type="date" class="linkclick-date" name="<?php echo $meta_date; ?>" value="<?php echo $lc_date; ?>" style="min-width:100%;"></p>
+        <p>
+            <?php
+            $latest_dates = $wpdb->get_col("SELECT DISTINCT meta_value FROM {$wpdb->postmeta} WHERE `meta_key` = '{$meta_date}' ORDER BY `meta_value` LIMIT 5;");
+            foreach($latest_dates as $date){
+                print("<button class=\"button linkclick-btn-date-previous\" type=\"button\" data-date=\"{$date}\">{$date}</button> ");
+            }
+            ?>
+            <script>
+            document.querySelectorAll('.linkclick-btn-date-previous').forEach(button=>button.addEventListener('click',event=>{
+                event.preventDefault();
+                document.querySelector('.linkclick-date').value = button.dataset.date;
+            }));
+            </script>
+        </p>
         <?php echo $print_form === true ? "<p style=\"text-align: right;\"><input type=\"submit\" class=\"button button-primary\"></p>" : ""; ?>
     <?php echo $print_form === true ? "</form>" : ""; ?>
     </div>
@@ -230,14 +252,17 @@ function save_meta(){
     global $wpdb;
     global $lc_db_link; 
     if(isset($_POST['linkclick-post-id']) && isset($_POST['linkclick-action'])){
+        global $meta_date;
         $post_id = $_POST['linkclick-post-id'];
         $lock_id = $_POST['linkclick-lock-id'];
         $category_id = $_POST['linkclick-category-id'];
+        $date = $_POST[$meta_date];
         if($_POST['linkclick-action'] === 'save' ) {
-            global $meta_lock_id;
             global $meta_category_id;
+            global $meta_lock_id;
             update_post_meta( $post_id, $meta_lock_id, $lock_id );
             update_post_meta( $post_id, $meta_category_id, $category_id );
+            update_post_meta( $post_id, $meta_date, $date);
         }
     }
 }

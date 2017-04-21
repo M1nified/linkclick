@@ -12,6 +12,7 @@
             
             var lock_id = $(this).data('linkclick-lock-id');
             var category_id = $(this).data('linkclick-category-id');
+            var date = $(this).data('linkclick-date');
 
             $("#linkclick-dialog-1 select[name=\"linkclick-lock-id\"]>option").removeAttr('selected').each(function(){
                 if($(this).val() == lock_id){
@@ -23,6 +24,8 @@
                     $(this).attr('selected',true);
                 }
             });
+
+            $("#linkclick-dialog-1 input.linkclick-date").val(date);
         })
     })
 })(jQuery, jQuery);

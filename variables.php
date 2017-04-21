@@ -18,6 +18,7 @@ global $meta_lock_id;
 global $meta_category_id;
 $meta_lock_id = '_linkclick-lock_id';
 $meta_category_id = '_linkclick-category_id';
+$meta_date = '_linkclick-date';
 
 //
 $code_validation_url = plugins_url(basename(plugin_dir_path(__FILE__)).'/code_validation.php');

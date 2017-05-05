@@ -273,7 +273,7 @@ function register_uploaded_file($spl_file_info){
     // print_r($spl_file_info);
     $relative_path = str_replace(realpath(get_home_path()),'',$spl_file_info->getPathName());
     $relative_path_slashed = str_replace('\\','/',$relative_path);
-    // print_r($relative_path_slashed);
+    // print_r([$spl_file_info->getPathName(),$relative_path_slashed]);
     // echo '<br>';
     global $wpdb;
     $post_id = $wpdb->get_row(
@@ -288,24 +288,27 @@ function register_uploaded_file($spl_file_info){
         return [false, 'already_registered', $post_id->post_id];
     }
     $filetype = wp_check_filetype( basename( $spl_file_info->getPathName() ), null );
-    $post_id = wp_insert_attachment(
-        [
-            'guid'              => get_home_url( 0, $relative_path_slashed ),
-            'post_mime_type'    => $filetype['type'],
-            'post_title'        => preg_replace( '/\.[^.]+$/', '', $spl_file_info->getFileName() ),
-            'post_content'      => '',
-            'post_status'       => 'inherit'
-        ],
-        $spl_file_info->getFileName(),
-        // $relative_path,
-        0 
-    );
-    // echo $post_id;
     $upload_dir = wp_upload_dir();
     // print_r($upload_dir);
     $relative_to_wpuploads_path = str_replace(str_replace('\\','/',$upload_dir['basedir']),'',str_replace('\\','/',$spl_file_info->getPathName()));
     // echo $relative_to_wpuploads_path;
-    if($attachment_data = wp_generate_attachment_metadata( $post_id, $spl_file_info->getFileName() )){
+    $attachment_data = [
+        'guid'              => get_home_url( 0, $relative_path_slashed ),
+        'post_mime_type'    => $filetype['type'],
+        'post_title'        => preg_replace( '/\.[^.]+$/', '', $spl_file_info->getFileName() ),
+        'post_content'      => '',
+        'post_status'       => 'inherit'
+    ];
+    $post_id = wp_insert_attachment(
+        $attachment_data,
+        // $spl_file_info->getFileName(),
+        $relative_to_wpuploads_path,
+        // $relative_path,
+        0 
+    );
+    // print_r([$attachment_data,$post_id]);
+    // echo $post_id;
+    if($attachment_data = wp_generate_attachment_metadata( $post_id, $spl_file_info->getPathName() )){
         // print_r($attachment_data);
         $update_result = wp_update_attachment_metadata( $post_id, $attachment_data );
         // print_r($update_result);

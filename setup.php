@@ -22,7 +22,9 @@ function shall_lock() {
     if (preg_match('/\/wp-content\/uploads\//m',$_SERVER['REQUEST_URI']) === 1) {
         error_reporting(0);
         $is_access = is_access_url($_SERVER['REQUEST_URI'], true);
+        // error_log("[".date('Y-m-d H:i:s')."][".__FUNCTION__."] ONE: ".print_r([$is_access], true)."\n", 3,  __DIR__.'\..\..\debug.dev.log');
         if($is_access === true){
+            // error_log("[".date('Y-m-d H:i:s')."][".__FUNCTION__."] ".print_r(['GRANTED'], true)."\n", 3,  __DIR__.'\..\..\debug.dev.log');
             $realpathname = realpath("{$_SERVER['DOCUMENT_ROOT']}{$_SERVER['REQUEST_URI']}");
             if(!$realpathname){
                 // echo "404";
@@ -108,7 +110,11 @@ function shall_lock() {
             }
             exit(); 
         }else{
-            auth_redirect();
+            // error_log("[".date('Y-m-d H:i:s')."][".__FUNCTION__."] ".print_r(['DENIED'], true)."\n", 3,  __DIR__.'\..\..\debug.dev.log');
+            $url = get_permission_denied_permalink($_SERVER['REQUEST_URI'], null, $is_access);
+            // error_log("[".date('Y-m-d H:i:s')."][".__FUNCTION__."] ".print_r([$url], true)."\n", 3,  __DIR__.'\..\..\debug.dev.log');
+            wp_redirect( $url, 302 );
+            // auth_redirect();
             exit();
         }   
     }
@@ -281,11 +287,12 @@ function load_bootstrap($hook) {
 
 add_filter( 'post_link', __NAMESPACE__.'\append_query_string', 10, 3 );
 function append_query_string( $url, $post, $leavename=false ) {
+    // error_log("[".date('Y-m-d H:i:s')."][".__FUNCTION__."] ".print_r(func_get_args(), true)."\n", 3,  __DIR__.'\..\..\debug.dev.log');
     if ( in_array($post->post_type,['post','page','attachment'])) {
         $is_access = is_access($post->ID);
-        if($is_access !== true){
-            $url = apply_filters( 'linkclick_permission_denied_permalink', $url, $post, $is_access );
-        }
+        $url = get_permission_denied_permalink($url, $post, $is_access);
 	}
 	return $url;
 }
+
+add_shortcode( 'linkclick-form-code', __NAMESPACE__.'\get_form_code' );

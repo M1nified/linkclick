@@ -116,7 +116,9 @@ function is_access($post_id,$log_if_granted=false){
         // not set
         return true;
     }
+    error_log("[".date('Y-m-d H:i:s')."][".__FUNCTION__."] ".print_r([func_get_args(),$lock_id], true)."\n", 3,  __DIR__.'\..\..\debug.dev.log');
     $is_access = apply_filters( 'linkclick_access', true, $post_id, $lock_id );
+    error_log("[".date('Y-m-d H:i:s')."][".__FUNCTION__."] ".print_r([func_get_args(),$is_access, $lock_id], true)."\n", 3,  __DIR__.'\..\..\debug.dev.log');
     if($is_access === true && $log_if_granted){
         log_visit($post_id);
     }
@@ -402,4 +404,20 @@ function readfile_chunked($filename, $retbytes = TRUE)
         return $cnt; // return num. bytes delivered like readfile() does.
     }
     return $status;
+}
+
+function get_form_code($atts, $context)
+{
+    $form = apply_filters( 'linkclick_form_code', null, $atts, $context);
+    return $form;
+}
+
+function get_permission_denied_permalink($url, $post, $is_access_result)
+{
+    error_log("[".date('Y-m-d H:i:s')."][".__FUNCTION__."] ".print_r([$url, $post, $is_access_result], true)."\n", 3,  __DIR__.'\..\..\debug.dev.log');
+    $ret_url = $url;
+    if($is_access_result !== true){
+        $ret_url = apply_filters( 'linkclick_permission_denied_permalink', $ret_url, $post, $is_access_result );
+    }
+    return $ret_url;
 }

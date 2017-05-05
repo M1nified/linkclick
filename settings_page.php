@@ -59,6 +59,15 @@ $this_page_url = home_url(add_query_arg( NULL, NULL ));
             delete_option( '_linkclick_download_tmp_status' );
             // delete_option( '_linkclick_download_tmp_size_min' );
         }
+    }elseif(isset($_POST['action']) && $_POST['action'] === 'set_code_settings'){
+        if(array_key_exists('form_page_id', $_POST))
+        {
+            update_option( '_linkclick_code_form_page_id', $_POST['form_page_id']);
+        }
+        else
+        {
+            delete_option( '_linkclick_code_form_page_id' );
+        }
     }
 
 
@@ -71,6 +80,7 @@ $this_page_url = home_url(add_query_arg( NULL, NULL ));
     $download_tmp_size_min = get_option( '_linkclick_download_tmp_size_min', 0 );
     $download_tmp_dir = get_option( '_linkclick_download_tmp_dir', '' );
     $download_tmp_url = get_option( '_linkclick_download_tmp_url', '' );
+    $code_form_page_id = get_option( '_linkclick_code_form_page_id', null);
 
 ?>
 
@@ -112,3 +122,12 @@ $this_page_url = home_url(add_query_arg( NULL, NULL ));
     </form>
 </section>
 
+<section>
+    <h2>Code settings</h2>
+    <form action="<?php echo $_SERVER['REQUEST_URI']; ?>" method="post">
+        <input type="hidden" name="action" value="set_code_settings">
+        <p><label>Code form page id: <input type="text" name="form_page_id" value="<?php echo $code_form_page_id; ?>" placeholder="12345"></label></p>
+        <p>Shortcode: <code>[linkclick-form-code]</code></p>
+        <input type="submit" class="button">
+    </form>
+</section>

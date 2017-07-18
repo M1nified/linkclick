@@ -10,7 +10,11 @@
 
  include_once(realpath(__DIR__.'/variables.php'));
 
-//  include_once(realpath(__DIR__.'/Class/.php'));
+ include_once(realpath(__DIR__.'/Class/DB.php'));
+ include_once(realpath(__DIR__.'/Class/DialogPerms.php'));
+ include_once(realpath(__DIR__.'/Class/PostMetaFields.php'));
+
+ include_once(realpath(__DIR__.'/elements/meta-box-1.php'));
 
  include_once(realpath(__DIR__.'/install.php'));
 

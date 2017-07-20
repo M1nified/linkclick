@@ -461,7 +461,7 @@ function get_form_code($atts, $context)
 
 function get_permission_denied_permalink($url, $post, $is_access_result)
 {
-    error_log("[".date('Y-m-d H:i:s')."][".__FUNCTION__."] ".print_r([$url, $post, $is_access_result], true)."\n", 3, __DIR__.'\..\..\debug.dev.log');
+    // error_log("[".date('Y-m-d H:i:s')."][".__FUNCTION__."] ".print_r([$url, $post, $is_access_result], true)."\n", 3, __DIR__.'\..\..\debug.dev.log');
     $ret_url = $url;
     if ($is_access_result !== true) {
         $ret_url = apply_filters( 'linkclick_permission_denied_permalink', $ret_url, $post, $is_access_result );

@@ -124,6 +124,11 @@ function get_post_id_for_url($url)
             error_log("[".date('Y-m-d H:i:s')."][".__FUNCTION__."] query: ".var_export($query, true)."\n", 3, __DIR__.'\..\..\debug.dev.log');
             error_log("[".date('Y-m-d H:i:s')."][".__FUNCTION__."] query: ".$query."\n", 3, __DIR__.'\..\..\debug.dev.log');
             $post = $wpdb->get_row($query);
+            if ($post === null) {
+                $query = "SELECT post_id as ID FROM {$wpdb->postmeta} WHERE meta_key = '_wp_attached_file' AND meta_value = '{$path}';";
+                error_log("[".date('Y-m-d H:i:s')."][".__FUNCTION__."] query: ".$query."\n", 3, __DIR__.'\..\..\debug.dev.log');
+                $post = $wpdb->get_row($query);
+            }
             if ($post !== null) {
                 return $post->ID;
             }

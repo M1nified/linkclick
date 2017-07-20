@@ -111,22 +111,22 @@ function get_post_id_for_url($url)
             ID FROM {$wpdb->posts}
             WHERE guid 
             LIKE '%{$url}%'");
-    error_log("[".date('Y-m-d H:i:s')."][".__FUNCTION__."] realpath: ".var_export($post, true)."\n", 3, __DIR__.'\..\..\debug.dev.log');
+    // error_log("[".date('Y-m-d H:i:s')."][".__FUNCTION__."] realpath: ".var_export($post, true)."\n", 3, __DIR__.'\..\..\debug.dev.log');
     if ($post === null) {
         if (!function_exists( '\get_home_path' )) {
             require_once( dirname(__FILE__) . '/../../../wp-admin/includes/file.php' );
         }
         $path = \realpath(\get_home_path().$url);
-        error_log("[".date('Y-m-d H:i:s')."][".__FUNCTION__."] realpath: ".var_export($path, true)."\n", 3, __DIR__.'\..\..\debug.dev.log');
+        // error_log("[".date('Y-m-d H:i:s')."][".__FUNCTION__."] realpath: ".var_export($path, true)."\n", 3, __DIR__.'\..\..\debug.dev.log');
         if ($path !== false) {
             $path = \str_replace('\\', '/', $path);
             $query = "SELECT ID FROM {$wpdb->posts} WHERE guid LIKE '%{$path}%';";
-            error_log("[".date('Y-m-d H:i:s')."][".__FUNCTION__."] query: ".var_export($query, true)."\n", 3, __DIR__.'\..\..\debug.dev.log');
-            error_log("[".date('Y-m-d H:i:s')."][".__FUNCTION__."] query: ".$query."\n", 3, __DIR__.'\..\..\debug.dev.log');
+            // error_log("[".date('Y-m-d H:i:s')."][".__FUNCTION__."] query: ".var_export($query, true)."\n", 3, __DIR__.'\..\..\debug.dev.log');
+            // error_log("[".date('Y-m-d H:i:s')."][".__FUNCTION__."] query: ".$query."\n", 3, __DIR__.'\..\..\debug.dev.log');
             $post = $wpdb->get_row($query);
             if ($post === null) {
                 $query = "SELECT post_id as ID FROM {$wpdb->postmeta} WHERE meta_key = '_wp_attached_file' AND meta_value = '{$path}';";
-                error_log("[".date('Y-m-d H:i:s')."][".__FUNCTION__."] query: ".$query."\n", 3, __DIR__.'\..\..\debug.dev.log');
+                // error_log("[".date('Y-m-d H:i:s')."][".__FUNCTION__."] query: ".$query."\n", 3, __DIR__.'\..\..\debug.dev.log');
                 $post = $wpdb->get_row($query);
             }
             if ($post !== null) {
@@ -141,7 +141,7 @@ function get_post_id_for_url($url)
 function is_access_url($url, $log_if_granted = false)
 {
     $post_id = get_post_id_for_url($url);
-    error_log("[".date('Y-m-d H:i:s')."][".__FUNCTION__."] post_id: ".var_export($post_id, true)."\n", 3, __DIR__.'\..\..\debug.dev.log');
+    // error_log("[".date('Y-m-d H:i:s')."][".__FUNCTION__."] post_id: ".var_export($post_id, true)."\n", 3, __DIR__.'\..\..\debug.dev.log');
     return $post_id === false ? true : is_access($post_id, $log_if_granted);
 }
 function is_access($post_id, $log_if_granted = false)

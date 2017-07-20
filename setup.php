@@ -26,13 +26,13 @@ function shall_lock()
         error_reporting(0);
         $post_id = get_the_ID();
         if ($post_id === false) {
-            error_log("[".date('Y-m-d H:i:s')."][".__FUNCTION__."] way: 1\n", 3, __DIR__.'\..\..\debug.dev.log');
+            // error_log("[".date('Y-m-d H:i:s')."][".__FUNCTION__."] way: 1\n", 3, __DIR__.'\..\..\debug.dev.log');
             $is_access = is_access_url($_SERVER['REQUEST_URI'], true);
         } else {
-            error_log("[".date('Y-m-d H:i:s')."][".__FUNCTION__."] way: 2\n", 3, __DIR__.'\..\..\debug.dev.log');
+            // error_log("[".date('Y-m-d H:i:s')."][".__FUNCTION__."] way: 2\n", 3, __DIR__.'\..\..\debug.dev.log');
             $is_access = is_access($post_id, true);
         }
-        error_log("[".date('Y-m-d H:i:s')."][".__FUNCTION__."] IS_ACCESS: ".var_export($is_access, true)."\n", 3, __DIR__.'\..\..\debug.dev.log');
+        // error_log("[".date('Y-m-d H:i:s')."][".__FUNCTION__."] IS_ACCESS: ".var_export($is_access, true)."\n", 3, __DIR__.'\..\..\debug.dev.log');
         if ($is_access === true) {
             // error_log("[".date('Y-m-d H:i:s')."][".__FUNCTION__."] ".print_r(['GRANTED'], true)."\n", 3,  __DIR__.'\..\..\debug.dev.log');
             $realpathname = realpath("{$_SERVER['DOCUMENT_ROOT']}{$_SERVER['REQUEST_URI']}");
